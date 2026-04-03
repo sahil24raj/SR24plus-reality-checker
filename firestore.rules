@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId} (matches request.auth.uid)
+    // Fields:
+    //   - uid: string (required) - User's unique ID
+    //   - email: string (required) - User's email
+    //   - displayName: string (optional) - User's name
+    //   - photoURL: string (optional) - User's profile picture
+    //   - createdAt: timestamp (required) - When the profile was created
+    //
+    // Collection: users/{userId}/scans
+    // Document ID: {scanId} (unique ID)
+    // Fields:
+    //   - id: string (required) - Unique scan ID
+    //   - uid: string (required) - Owner's UID
+    //   - timestamp: timestamp (required) - When the scan was performed
+    //   - input: string (required, max 5000 chars) - User's input text
+    //   - confidence: number (required, 0-100) - Confidence score
+    //   - tone: string (required, enum) - Detected tone
+    //   - behavior: string (required) - Behavior description
+    //   - decisionQuality: string (required, enum) - Decision quality
+    //   - sentiment: string (required, enum) - Sentiment score
+    //   - thinkingPattern: string (optional) - Analysis of thinking pattern
+    //   - improvementAreas: string (optional) - Areas needing improvement
+    //   - stepByStepGuide: list (optional) - Actionable steps
+    //   - suggestions: list (optional) - General suggestions
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.createdAt is timestamp &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('photoURL' in data) || isValidUrl(data.photoURL));
+    }
+
+    function isValidScan(data) {
+      return hasRequiredFields(['id', 'uid', 'timestamp', 'input', 'confidence', 'tone', 'behavior', 'decisionQuality', 'sentiment']) &&
+             data.id is string &&
+             data.uid == request.auth.uid &&
+             data.timestamp is timestamp &&
+             data.input is string && data.input.size() <= 5000 &&
+             data.confidence is number && data.confidence >= 0 && data.confidence <= 100 &&
+             data.tone in ['Assertive', 'Passive', 'Aggressive', 'Neutral'] &&
+             data.behavior is string && data.behavior.size() < 1000 &&
+             data.decisionQuality in ['Correct', 'Incorrect', 'Uncertain'] &&
+             data.sentiment in ['Positive', 'Neutral', 'Negative'] &&
+             (!('thinkingPattern' in data) || (data.thinkingPattern is string && data.thinkingPattern.size() < 2000)) &&
+             (!('improvementAreas' in data) || (data.improvementAreas is string && data.improvementAreas.size() < 2000)) &&
+             (!('stepByStepGuide' in data) || (data.stepByStepGuide is list && data.stepByStepGuide.size() <= 10)) &&
+             (!('suggestions' in data) || (data.suggestions is list && data.suggestions.size() <= 10));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) &&
+                      request.resource.data.uid == resource.data.uid &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false; // Profiles cannot be deleted via client
+
+      // User Scans
+      match /scans/{scanId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidScan(request.resource.data);
+        allow update: if isOwner(userId) && isValidScan(request.resource.data) &&
+                        request.resource.data.id == resource.data.id &&
+                        request.resource.data.uid == resource.data.uid &&
+                        request.resource.data.timestamp == resource.data.timestamp;
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

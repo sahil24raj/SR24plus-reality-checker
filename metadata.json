@@ -1,0 +1,7 @@
+{
+  "name": "SR24+ Reality Checker",
+  "description": "An AI-powered behavioral analysis dashboard that tracks your decisions, confidence, and tone using Azure AI services.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

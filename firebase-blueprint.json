@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user-specific metadata and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique identifier for the user." },
+        "email": { "type": "string", "description": "User's email address." },
+        "displayName": { "type": "string", "description": "User's display name." },
+        "photoURL": { "type": "string", "description": "User's profile picture URL." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user profile was created." }
+      },
+      "required": ["uid", "email"]
+    },
+    "Scan": {
+      "title": "Reality Scan",
+      "description": "A single behavioral analysis entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "input": { "type": "string" },
+        "confidence": { "type": "number" },
+        "tone": { "type": "string", "enum": ["Assertive", "Passive", "Aggressive", "Neutral"] },
+        "behavior": { "type": "string" },
+        "decisionQuality": { "type": "string", "enum": ["Correct", "Incorrect", "Uncertain"] },
+        "sentiment": { "type": "string", "enum": ["Positive", "Neutral", "Negative"] },
+        "thinkingPattern": { "type": "string" },
+        "improvementAreas": { "type": "string" },
+        "stepByStepGuide": { "type": "array", "items": { "type": "string" } },
+        "suggestions": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "uid", "timestamp", "input"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/users/{userId}/scans/{scanId}": {
+      "schema": "Scan",
+      "description": "Individual reality scans for a specific user."
+    }
+  }
+}
