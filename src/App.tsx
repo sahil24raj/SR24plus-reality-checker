@@ -313,7 +313,7 @@ const Navbar = ({ activeTab, setActiveTab, user }: { activeTab: string, setActiv
   </nav>
 );
 
-const RealityInput = ({ onAnalyze, user }: { onAnalyze: (res: AnalysisResult) => void, user: User }) => {
+const RealityInput = ({ onAnalyze, user, entries, userGoal }: { onAnalyze: (res: AnalysisResult) => void, user: User, entries: AnalysisResult[], userGoal: string }) => {
   const [text, setText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -354,7 +354,8 @@ const RealityInput = ({ onAnalyze, user }: { onAnalyze: (res: AnalysisResult) =>
     setIsAnalyzing(true);
     setError(null);
     try {
-      const result = await analyzeRealityWithGemini(text);
+      const pastLogs = entries.slice(-5).map(e => e.input);
+      const result = await analyzeRealityWithGemini(text, pastLogs, userGoal || undefined);
       const scansPath = `users/${user.uid}/scans`;
       const scanDocRef = doc(collection(db, scansPath));
       const scanId = scanDocRef.id;
@@ -364,27 +365,24 @@ const RealityInput = ({ onAnalyze, user }: { onAnalyze: (res: AnalysisResult) =>
         uid: user.uid,
         timestamp: new Date().toISOString(),
         input: text,
-        confidence: result.confidence || 50,
-        tone: result.tone as any || 'Neutral',
-        behavior: result.behavior || 'Observational',
-        decisionQuality: result.decisionQuality as any || 'Uncertain',
-        sentiment: result.sentiment as any || 'Neutral',
-        thinkingPattern: result.thinkingPattern,
-        improvementAreas: result.improvementAreas,
-        stepByStepGuide: result.stepByStepGuide,
-        suggestions: result.suggestions || [],
-        decisionDetails: result.decisionDetails,
-        strengths: result.strengths || [],
-        weaknesses: result.weaknesses || [],
-        aiCoachMessage: result.aiCoachMessage,
-        emotionalFeedback: result.emotionalFeedback,
-        disciplineScore: result.disciplineScore,
-        focusScore: result.focusScore,
-        mentalClarityScore: result.mentalClarityScore,
+        confidence: result.confidence,
+        tone: result.tone,
+        behavior: result.behavior,
+        decisionQuality: result.decisionQuality,
+        sentiment: result.sentiment,
         realityScore: result.realityScore,
-        patternDetected: result.patternDetected,
+        coreState: result.coreState,
+        realityScores: result.realityScores,
+        triggerDetection: result.triggerDetection,
+        timelineAnalysis: result.timelineAnalysis,
+        personalityProfile: result.personalityProfile,
+        behaviorPattern: result.behaviorPattern,
         futurePrediction: result.futurePrediction,
-        aiCoachPlan: result.aiCoachPlan || []
+        recoveryProtocol: result.recoveryProtocol,
+        actionPlan: result.actionPlan,
+        goalAlignment: result.goalAlignment,
+        aiCoachMessage: result.aiCoachMessage,
+        brutalRealityCheck: result.brutalRealityCheck,
       };
 
       try {
@@ -563,8 +561,7 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
   const rightPercent = totalDecisions > 0 ? Math.round((rightDecisions.length / totalDecisions) * 100) : 0;
   const wrongPercent = totalDecisions > 0 ? Math.round((wrongDecisions.length / totalDecisions) * 100) : 0;
 
-  const allStrengths = Array.from(new Set(entries.flatMap(e => e.strengths || [])));
-  const allWeaknesses = Array.from(new Set(entries.flatMap(e => e.weaknesses || [])));
+  const allPersonalityTraits = Array.from(new Set(entries.flatMap(e => e.personalityProfile || [])));
 
   return (
     <div className="space-y-8 pt-8 pb-24">
@@ -821,7 +818,7 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
                 {rightDecisions.length > 0 ? rightDecisions.map((d, i) => (
                   <div key={i} className="p-3 bg-neon-green/5 border border-neon-green/10 rounded-xl text-xs text-gray-300 leading-relaxed group hover:bg-neon-green/10 transition-all">
                     <div className="text-[8px] text-neon-green/50 mb-1">{format(new Date(d.timestamp), 'MMM dd, HH:mm')}</div>
-                    {d.decisionDetails || d.behavior}
+                    {d.behavior || d.decisionQuality}
                   </div>
                 )) : (
                   <div className="text-xs text-gray-600 italic">No positive vectors recorded.</div>
@@ -838,7 +835,7 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
                 {wrongDecisions.length > 0 ? wrongDecisions.map((d, i) => (
                   <div key={i} className="p-3 bg-neon-yellow/5 border border-neon-yellow/10 rounded-xl text-xs text-gray-300 leading-relaxed group hover:bg-neon-yellow/10 transition-all">
                     <div className="text-[8px] text-neon-yellow/50 mb-1">{format(new Date(d.timestamp), 'MMM dd, HH:mm')}</div>
-                    {d.decisionDetails || d.behavior}
+                    {d.behavior || d.decisionQuality}
                   </div>
                 )) : (
                   <div className="text-xs text-gray-600 italic">No negative vectors recorded.</div>
@@ -860,60 +857,37 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
               <Brain size={18} />
               Neural Profile Analysis
             </h3>
-            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Detailed Insights</div>
+            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{allPersonalityTraits.length} Traits</div>
           </div>
 
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Core Strengths (Aggregated)</div>
-                <div className="text-[10px] font-mono text-neon-cyan">{allStrengths.length} Identified</div>
+          <div className="space-y-4">
+            {allPersonalityTraits.length > 0 ? allPersonalityTraits.slice(0, 6).map((trait, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 bg-neon-purple/5 border border-neon-purple/10 rounded-xl">
+                <span className="text-neon-purple font-black text-sm">{i + 1}.</span>
+                <span className="text-sm text-gray-300">{trait}</span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {allStrengths.length > 0 ? allStrengths.map((s, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-full text-[10px] font-bold text-neon-cyan uppercase tracking-wider hover:bg-neon-cyan/20 transition-all cursor-default">
-                    {s}
-                  </span>
-                )) : (
-                  <div className="text-xs text-gray-600 italic">Analyzing strengths...</div>
-                )}
+            )) : (
+              <div className="text-xs text-gray-600 italic">Run a Reality Scan to build your Personality Profile.</div>
+            )}
+          </div>
+
+          <div className="pt-4 border-t border-white/5 space-y-4">
+            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Neural Optimization Metrics</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <div className="text-[8px] font-mono text-gray-500 uppercase mb-1">Success Ratio</div>
+                <div className="text-2xl font-black text-neon-green">{rightPercent}%</div>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <div className="text-[8px] font-mono text-gray-500 uppercase mb-1">Failure Ratio</div>
+                <div className="text-2xl font-black text-neon-yellow">{wrongPercent}%</div>
               </div>
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Growth Opportunities (Aggregated)</div>
-                <div className="text-[10px] font-mono text-neon-purple">{allWeaknesses.length} Identified</div>
+            <div className="flex items-center gap-4 pt-2">
+              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-neon-cyan to-neon-purple" style={{ width: `${decisionRate}%` }} />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {allWeaknesses.length > 0 ? allWeaknesses.map((w, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-neon-purple/10 border border-neon-purple/20 rounded-full text-[10px] font-bold text-neon-purple uppercase tracking-wider hover:bg-neon-purple/20 transition-all cursor-default">
-                    {w}
-                  </span>
-                )) : (
-                  <div className="text-xs text-gray-600 italic">Analyzing weaknesses...</div>
-                )}
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-white/5 space-y-4">
-              <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Neural Optimization Metrics</div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="text-[8px] font-mono text-gray-500 uppercase mb-1">Success Ratio</div>
-                  <div className="text-2xl font-black text-neon-green">{rightPercent}%</div>
-                </div>
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="text-[8px] font-mono text-gray-500 uppercase mb-1">Failure Ratio</div>
-                  <div className="text-2xl font-black text-neon-yellow">{wrongPercent}%</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 pt-2">
-                <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-neon-cyan to-neon-purple" style={{ width: `${decisionRate}%` }} />
-                </div>
-                <span className="text-[10px] font-bold text-white uppercase tracking-widest">{decisionRate}% Optimized</span>
-              </div>
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest">{decisionRate}% Optimized</span>
             </div>
           </div>
         </motion.div>
@@ -941,28 +915,31 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
                 </div>
               </div>
               
-              {entries[entries.length-1].emotionalFeedback && (
+              {/* AI Coach Message */}
+              {entries[entries.length-1].aiCoachMessage && (
                 <div className="p-4 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl space-y-2">
                   <div className="text-[10px] font-mono text-neon-cyan uppercase tracking-widest flex items-center gap-2">
-                    <Brain size={14} /> AI Coach Observation
+                    <Brain size={14} /> AI Coach
                   </div>
-                  <p className="text-sm text-gray-300 italic">"{(entries[entries.length-1] as any).aiCoachMessage || entries[entries.length-1].emotionalFeedback}"</p>
+                  <p className="text-sm text-gray-300 italic">"{entries[entries.length-1].aiCoachMessage}"</p>
                 </div>
               )}
 
-              {entries[entries.length-1].patternDetected && (
-                <div className="p-4 bg-neon-purple/5 border border-neon-purple/20 rounded-2xl space-y-2">
-                  <div className="text-[10px] font-mono text-neon-purple uppercase tracking-widest flex items-center gap-2">
-                    <Zap size={14} /> Pattern Detected
+              {/* Trigger Detection */}
+              {entries[entries.length-1].triggerDetection?.trigger && (
+                <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl space-y-2">
+                  <div className="text-[10px] font-mono text-red-400 uppercase tracking-widest flex items-center gap-2">
+                    <Zap size={14} /> Trigger Detected
                   </div>
-                  <p className="text-sm text-gray-300 font-medium">{entries[entries.length-1].patternDetected}</p>
+                  <p className="text-sm font-bold text-red-300">{entries[entries.length-1].triggerDetection?.trigger}</p>
+                  <p className="text-xs text-gray-400">{entries[entries.length-1].triggerDetection?.explanation}</p>
                 </div>
               )}
-              
+
               {entries[entries.length-1].futurePrediction && (
                 <div className="p-4 bg-neon-yellow/5 border border-neon-yellow/20 rounded-2xl space-y-2">
                   <div className="text-[10px] font-mono text-neon-yellow uppercase tracking-widest flex items-center gap-2">
-                    <TrendingUp size={14} /> Future Prediction
+                    <TrendingUp size={14} /> Prediction
                   </div>
                   <p className="text-sm text-gray-300">{entries[entries.length-1].futurePrediction}</p>
                 </div>
@@ -970,46 +947,53 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
             </div>
 
             <div className="w-full md:w-80 space-y-6">
-              
               {/* AI Recommendations */}
               <div className="space-y-3">
                 <div className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 mb-2 p-3 bg-neon-cyan/20 rounded-xl">
-                   🔥 AI Recommendations
+                   🔥 Action Plan
                 </div>
                 <div className="space-y-2">
-                  {(entries[entries.length-1].aiCoachPlan || entries[entries.length-1].suggestions)?.map((rec, i) => (
+                  {(entries[entries.length-1].actionPlan || entries[entries.length-1].recoveryProtocol)?.map((rec, i) => (
                     <div key={i} className="flex gap-3 text-sm text-gray-300 p-3 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-neon-cyan font-black mt-0.5">•</span>
+                      <span className="text-neon-cyan font-black mt-0.5">{i+1}.</span>
                       {rec}
                     </div>
-                  )) || <div className="text-xs text-gray-500 italic">No recommendations available.</div>}
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Thinking Pattern</div>
-                <div className="text-sm text-gray-300 bg-white/5 p-3 rounded-lg border border-white/5">
-                  {entries[entries.length-1].thinkingPattern || 'Analyzing...'}
+                  )) || <div className="text-xs text-gray-500 italic">No plan available.</div>}
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Improvement Areas</div>
-                <div className="text-sm text-neon-purple/80 bg-neon-purple/5 p-3 rounded-lg border border-neon-purple/10">
-                  {entries[entries.length-1].improvementAreas || 'Analyzing...'}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Step-by-Step Guide</div>
+              {/* Goal Alignment */}
+              {entries[entries.length-1].goalAlignment && (
                 <div className="space-y-2">
-                  {entries[entries.length-1].stepByStepGuide?.map((step, i) => (
-                    <div key={i} className="flex gap-3 text-xs text-gray-400">
-                      <span className="text-neon-cyan font-mono">{i + 1}.</span>
-                      {step}
-                    </div>
-                  )) || <div className="text-xs text-gray-500 italic">No guide available for this scan.</div>}
+                  <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Goal Alignment</div>
+                  <div className="text-sm text-gray-300 bg-white/5 p-3 rounded-lg border border-white/5">
+                    {entries[entries.length-1].goalAlignment}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Recovery Protocol */}
+              {entries[entries.length-1].recoveryProtocol && entries[entries.length-1].recoveryProtocol!.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-[10px] font-mono text-neon-green uppercase tracking-[0.2em]">⚡ Recovery Protocol</div>
+                  <div className="space-y-2">
+                    {entries[entries.length-1].recoveryProtocol?.map((step, i) => (
+                      <div key={i} className="flex gap-3 text-xs text-gray-400 bg-neon-green/5 border border-neon-green/10 p-2 rounded-lg">
+                        <span className="text-neon-green font-mono">{i + 1}.</span>
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Brutal Reality Check */}
+              {entries[entries.length-1].brutalRealityCheck && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="text-[10px] font-mono text-red-400 uppercase mb-1">⚠️ Reality Check</div>
+                  <p className="text-xs text-red-300">{entries[entries.length-1].brutalRealityCheck}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1018,7 +1002,15 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
   );
 };
 
-const Profile = ({ user, entries }: { user: User, entries: AnalysisResult[] }) => {
+const Profile = ({ user, entries, userGoal, onSaveGoal }: { user: User, entries: AnalysisResult[], userGoal: string, onSaveGoal: (g: string) => void }) => {
+  const [goalInput, setGoalInput] = React.useState(userGoal);
+  const [goalSaved, setGoalSaved] = React.useState(false);
+
+  const handleSaveGoal = () => {
+    onSaveGoal(goalInput);
+    setGoalSaved(true);
+    setTimeout(() => setGoalSaved(false), 2000);
+  };
   return (
     <div className="max-w-4xl mx-auto pt-12 space-y-8 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1072,35 +1064,71 @@ const Profile = ({ user, entries }: { user: User, entries: AnalysisResult[] }) =
         </div>
       </motion.div>
 
+      {/* Goal Setting */}
+      <motion.div whileHover={{ scale: 1.005 }} className="glass-card p-8 border-neon-yellow/20 space-y-4">
+        <h4 className="text-xs font-mono uppercase tracking-[0.3em] flex items-center gap-3 text-neon-yellow">
+          <Zap size={18} />
+          Long-Term Goal (Used by AI Coach)
+        </h4>
+        <p className="text-[10px] text-gray-500 font-mono">Set your goal so the AI can evaluate your daily actions against it. e.g. "Get a software job", "Lose 10kg"</p>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={goalInput}
+            onChange={e => setGoalInput(e.target.value)}
+            placeholder="My goal is to..."
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-neon-yellow/50 focus:ring-1 focus:ring-neon-yellow/20 transition-all"
+          />
+          <button
+            onClick={handleSaveGoal}
+            className="px-6 py-3 bg-neon-yellow text-black font-black rounded-xl hover:scale-105 transition-all text-sm"
+          >
+            {goalSaved ? '✓ Saved!' : 'Save Goal'}
+          </button>
+        </div>
+        {userGoal && (
+          <div className="p-3 bg-neon-yellow/5 border border-neon-yellow/10 rounded-xl">
+            <span className="text-[10px] font-mono text-neon-yellow uppercase">Active Goal: </span>
+            <span className="text-sm text-gray-300">{userGoal}</span>
+          </div>
+        )}
+      </motion.div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Personality Profile */}
         <motion.div whileHover={{ y: -5 }} className="glass-card p-8 border-neon-cyan/10">
           <h4 className="text-xs font-mono uppercase tracking-[0.3em] mb-6 flex items-center gap-3 text-neon-cyan">
             <Brain size={18} />
-            Neural Strengths
+            Personality Profile
           </h4>
-          <div className="flex flex-wrap gap-2">
-            {Array.from(new Set(entries.flatMap(e => e.strengths || []))).slice(0, 8).map((s, i) => (
-              <span key={i} className="px-3 py-1.5 bg-neon-cyan/10 border border-neon-cyan/20 rounded-full text-[10px] font-bold text-neon-cyan uppercase tracking-wider">
-                {s}
-              </span>
+          <div className="space-y-3">
+            {entries.length > 0 && entries[entries.length - 1].personalityProfile?.map((trait, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 bg-neon-cyan/5 border border-neon-cyan/10 rounded-xl">
+                <span className="text-neon-cyan font-black text-sm mt-0.5">{i + 1}.</span>
+                <span className="text-sm text-gray-300">{trait}</span>
+              </div>
             ))}
-            {entries.length === 0 && <span className="text-xs text-gray-600 italic">No data analyzed yet.</span>}
+            {entries.length === 0 && <span className="text-xs text-gray-600 italic">No data analyzed yet. Run a scan to build your profile.</span>}
           </div>
         </motion.div>
 
+        {/* Behavior Pattern */}
         <motion.div whileHover={{ y: -5 }} className="glass-card p-8 border-neon-purple/10">
           <h4 className="text-xs font-mono uppercase tracking-[0.3em] mb-6 flex items-center gap-3 text-neon-purple">
-            <Zap size={18} />
-            Growth Areas
+            <Activity size={18} />
+            Behavior Pattern
           </h4>
-          <div className="flex flex-wrap gap-2">
-            {Array.from(new Set(entries.flatMap(e => e.weaknesses || []))).slice(0, 8).map((w, i) => (
-              <span key={i} className="px-3 py-1.5 bg-neon-purple/10 border border-neon-purple/20 rounded-full text-[10px] font-bold text-neon-purple uppercase tracking-wider">
-                {w}
-              </span>
-            ))}
-            {entries.length === 0 && <span className="text-xs text-gray-600 italic">No data analyzed yet.</span>}
-          </div>
+          {entries.length > 0 && entries[entries.length - 1].behaviorPattern ? (
+            <p className="text-sm text-gray-300 leading-relaxed italic">"{entries[entries.length - 1].behaviorPattern}"</p>
+          ) : (
+            <span className="text-xs text-gray-600 italic">No pattern detected yet.</span>
+          )}
+          {entries.length > 0 && entries[entries.length - 1].brutalRealityCheck && (
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+              <div className="text-[10px] font-mono text-red-400 uppercase mb-1">⚠️ Reality Check</div>
+              <p className="text-xs text-red-300">{entries[entries.length - 1].brutalRealityCheck}</p>
+            </div>
+          )}
         </motion.div>
       </div>
 
@@ -1238,6 +1266,7 @@ export default function App() {
   const [entries, setEntries] = useState<AnalysisResult[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [userGoal, setUserGoal] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -1275,9 +1304,11 @@ export default function App() {
             photoURL: user.photoURL,
             createdAt: serverTimestamp()
           });
+        } else {
+          const data = userDoc.data();
+          if (data.longTermGoal) setUserGoal(data.longTermGoal);
         }
       } catch (err) {
-        // Log but don't block the app
         console.error('Profile sync failed:', err);
       }
     };
@@ -1310,6 +1341,17 @@ export default function App() {
 
   const handleNewEntry = (entry: AnalysisResult) => {
     setActiveTab('dashboard');
+  };
+
+  const handleSaveGoal = async (goal: string) => {
+    setUserGoal(goal);
+    if (!user) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, { longTermGoal: goal }, { merge: true });
+    } catch (err) {
+      console.error('Failed to save goal:', err);
+    }
   };
 
   const handleDeleteEntry = async (id: string) => {
@@ -1352,9 +1394,9 @@ export default function App() {
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
                 {activeTab === 'dashboard' && <Dashboard entries={entries} />}
-                {activeTab === 'input' && <RealityInput onAnalyze={handleNewEntry} user={user} />}
+                {activeTab === 'input' && <RealityInput onAnalyze={handleNewEntry} user={user} entries={entries} userGoal={userGoal} />}
                 {activeTab === 'history' && <History entries={entries} onDelete={handleDeleteEntry} />}
-                {activeTab === 'profile' && <Profile user={user} entries={entries} />}
+                {activeTab === 'profile' && <Profile user={user} entries={entries} userGoal={userGoal} onSaveGoal={handleSaveGoal} />}
               </motion.div>
             </AnimatePresence>
           </main>

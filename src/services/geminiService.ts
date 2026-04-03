@@ -1,77 +1,77 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult } from "../types";
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const genAI = new GoogleGenAI({ apiKey: (import.meta as any).env?.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '') || "" });
 
-export async function analyzeRealityWithGemini(text: string): Promise<Partial<AnalysisResult>> {
+export async function analyzeRealityWithGemini(
+  currentLog: string,
+  pastLogs: string[] = [],
+  userGoal?: string
+): Promise<Partial<AnalysisResult>> {
   const model = "gemini-3-flash-preview";
-    const prompt = `
-    Analyze the following reality entry and provide a highly personalized, emotionally intelligent behavioral report in JSON format.
-    Entry: "${text}"
-    
-    The JSON should include:
-    - confidence: (number 0-100) representing the user's self-assurance.
-    - tone: (string: 'Assertive', 'Passive', 'Aggressive', or 'Neutral')
-    - behavior: (string) a short description of the detected behavior pattern.
-    - decisionQuality: (string: 'Correct', 'Incorrect', or 'Uncertain') based on the logic/consequences described.
-    - decisionDetails: (string) specific details about why the decision was correct or incorrect.
-    - strengths: (array of exactly 2 strings) EXACTLY 2 strengths identified from this entry. You MUST provide 2.
-    - weaknesses: (array of exactly 2 strings) EXACTLY 2 weaknesses or areas of vulnerability. You MUST provide 2.
-    - sentiment: (string: 'Positive', 'Neutral', or 'Negative')
-    - thinkingPattern: (string) deep analysis of the user's thought process.
-    - improvementAreas: (string) specific areas for mindset improvement.
-    - stepByStepGuide: (array of strings) a detailed, 3-5 step guide on how to improve.
-    - suggestions: (array of strings) 2-3 actionable suggestions.
-    
-    New Advanced Features:
-    - aiCoachMessage: (string) A direct, highly personalized coaching message addressing the user directly (e.g. "You showed strong focus early but lost momentum. Let's fix consistency.").
-    - emotionalFeedback: (string) An empathetic observation of their emotional state (e.g. "Looks like today was mentally exhausting. You handled it well despite frustration.").
-    - disciplineScore: (number 0-100) Measure of task discipline.
-    - focusScore: (number 0-100) Measure of focus and concentration.
-    - mentalClarityScore: (number 0-100) Measure of mental state clarity.
-    - realityScore: (number 0-100) The overall weighted average of discipline, focus, and clarity.
-    - patternDetected: (string) A sharply observed behavioral pattern (e.g. "You tend to procrastinate mostly after 2 PM daily.").
-    - futurePrediction: (string) A realistic prediction based on this pattern (e.g. "If you continue this pattern, your productivity will drop by evening.").
-    - aiCoachPlan: (array of strings) 2-3 specific, strict tasks for tomorrow to break bad patterns.
-  `;
+
+  const pastSummary = pastLogs.length > 0
+    ? pastLogs.slice(-5).map((l, i) => `[${i + 1}] ${l.slice(0, 60)}`).join('; ')
+    : 'none';
+
+  const prompt = `You are a strict AI life coach. Analyze this behavioral log. Be concise.
+
+LOG: "${currentLog.slice(0, 400)}"
+PAST: ${pastSummary.slice(0, 200)}
+GOAL: ${userGoal ? userGoal.slice(0, 80) : 'none'}
+
+Return compact JSON. All strings max 100 chars. All arrays max 3 items.`;
 
   try {
     const response = await genAI.models.generateContent({
       model: model,
       contents: prompt,
       config: {
+        maxOutputTokens: 1500,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            confidence: { type: Type.NUMBER },
-            tone: { type: Type.STRING },
-            behavior: { type: Type.STRING },
-            decisionQuality: { type: Type.STRING },
-            decisionDetails: { type: Type.STRING },
-            strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-            weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-            sentiment: { type: Type.STRING },
-            thinkingPattern: { type: Type.STRING },
-            improvementAreas: { type: Type.STRING },
-            stepByStepGuide: { type: Type.ARRAY, items: { type: Type.STRING } },
-            suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-            aiCoachMessage: { type: Type.STRING },
-            emotionalFeedback: { type: Type.STRING },
+            // Core state (flattened for token efficiency)
+            emotionalState: { type: Type.STRING },
+            mentalEnergy: { type: Type.STRING },
+            focusLevel: { type: Type.NUMBER },
+            disciplineLevel: { type: Type.NUMBER },
+            coreExplanation: { type: Type.STRING },
+            // Reality scores
             disciplineScore: { type: Type.NUMBER },
             focusScore: { type: Type.NUMBER },
-            mentalClarityScore: { type: Type.NUMBER },
-            realityScore: { type: Type.NUMBER },
-            patternDetected: { type: Type.STRING },
+            consistencyScore: { type: Type.NUMBER },
+            mentalStabilityScore: { type: Type.NUMBER },
+            scoresExplanation: { type: Type.STRING },
+            // Trigger
+            trigger: { type: Type.STRING },
+            triggerExplanation: { type: Type.STRING },
+            // Analysis
+            timelineAnalysis: { type: Type.STRING },
+            personalityProfile: { type: Type.ARRAY, items: { type: Type.STRING } },
+            behaviorPattern: { type: Type.STRING },
             futurePrediction: { type: Type.STRING },
-            aiCoachPlan: { type: Type.ARRAY, items: { type: Type.STRING } }
+            recoveryProtocol: { type: Type.ARRAY, items: { type: Type.STRING } },
+            actionPlan: { type: Type.ARRAY, items: { type: Type.STRING } },
+            goalAlignment: { type: Type.STRING },
+            aiCoachMessage: { type: Type.STRING },
+            brutalRealityCheck: { type: Type.STRING },
+            // Standard fields
+            decisionQuality: { type: Type.STRING },
+            sentiment: { type: Type.STRING },
+            tone: { type: Type.STRING },
+            realityScore: { type: Type.NUMBER },
+            behavior: { type: Type.STRING },
+            confidence: { type: Type.NUMBER }
           },
           required: [
-            "confidence", "tone", "behavior", "decisionQuality", "decisionDetails", 
-            "strengths", "weaknesses", "sentiment", "thinkingPattern", "improvementAreas", 
-            "stepByStepGuide", "suggestions", "aiCoachMessage", "emotionalFeedback",
-            "disciplineScore", "focusScore", "mentalClarityScore", "realityScore",
-            "patternDetected", "futurePrediction", "aiCoachPlan"
+            "emotionalState", "mentalEnergy", "focusLevel", "disciplineLevel", "coreExplanation",
+            "disciplineScore", "focusScore", "consistencyScore", "mentalStabilityScore", "scoresExplanation",
+            "trigger", "triggerExplanation", "timelineAnalysis", "personalityProfile", "behaviorPattern",
+            "futurePrediction", "recoveryProtocol", "actionPlan", "goalAlignment",
+            "aiCoachMessage", "brutalRealityCheck",
+            "decisionQuality", "sentiment", "tone", "realityScore", "behavior", "confidence"
           ]
         }
       }
@@ -79,9 +79,47 @@ export async function analyzeRealityWithGemini(text: string): Promise<Partial<An
 
     const resultText = response.text;
     if (!resultText) throw new Error("No response from Gemini");
-    
-    const parsed = JSON.parse(resultText);
-    return parsed;
+
+    const flat = JSON.parse(resultText);
+
+    // Re-map flat fields back into the nested AnalysisResult structure
+    const mapped: Partial<AnalysisResult> = {
+      confidence: flat.confidence,
+      tone: flat.tone,
+      behavior: flat.behavior,
+      decisionQuality: flat.decisionQuality,
+      sentiment: flat.sentiment,
+      realityScore: flat.realityScore,
+      coreState: {
+        emotionalState: flat.emotionalState,
+        mentalEnergy: flat.mentalEnergy,
+        focusLevel: flat.focusLevel,
+        disciplineLevel: flat.disciplineLevel,
+        explanation: flat.coreExplanation,
+      },
+      realityScores: {
+        disciplineScore: flat.disciplineScore,
+        focusScore: flat.focusScore,
+        consistencyScore: flat.consistencyScore,
+        mentalStabilityScore: flat.mentalStabilityScore,
+        explanation: flat.scoresExplanation,
+      },
+      triggerDetection: {
+        trigger: flat.trigger,
+        explanation: flat.triggerExplanation,
+      },
+      timelineAnalysis: flat.timelineAnalysis,
+      personalityProfile: flat.personalityProfile,
+      behaviorPattern: flat.behaviorPattern,
+      futurePrediction: flat.futurePrediction,
+      recoveryProtocol: flat.recoveryProtocol,
+      actionPlan: flat.actionPlan,
+      goalAlignment: flat.goalAlignment,
+      aiCoachMessage: flat.aiCoachMessage,
+      brutalRealityCheck: flat.brutalRealityCheck,
+    };
+
+    return mapped;
   } catch (error) {
     console.error("Gemini Analysis Failed:", error);
     throw error;
