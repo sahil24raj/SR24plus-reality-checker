@@ -372,7 +372,19 @@ const RealityInput = ({ onAnalyze, user }: { onAnalyze: (res: AnalysisResult) =>
         thinkingPattern: result.thinkingPattern,
         improvementAreas: result.improvementAreas,
         stepByStepGuide: result.stepByStepGuide,
-        suggestions: result.suggestions || []
+        suggestions: result.suggestions || [],
+        decisionDetails: result.decisionDetails,
+        strengths: result.strengths || [],
+        weaknesses: result.weaknesses || [],
+        aiCoachMessage: result.aiCoachMessage,
+        emotionalFeedback: result.emotionalFeedback,
+        disciplineScore: result.disciplineScore,
+        focusScore: result.focusScore,
+        mentalClarityScore: result.mentalClarityScore,
+        realityScore: result.realityScore,
+        patternDetected: result.patternDetected,
+        futurePrediction: result.futurePrediction,
+        aiCoachPlan: result.aiCoachPlan || []
       };
 
       try {
@@ -545,7 +557,7 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
   const currentRealityScore = latestEntry?.realityScore || avgConfidence;
 
   const rightDecisions = entries.filter(e => e.decisionQuality === 'Correct').reverse();
-  const wrongDecisions = entries.filter(e => e.decisionQuality === 'Incorrect').reverse();
+  const wrongDecisions = entries.filter(e => e.decisionQuality === 'Incorrect' || e.decisionQuality === 'Uncertain').reverse();
   
   const totalDecisions = rightDecisions.length + wrongDecisions.length;
   const rightPercent = totalDecisions > 0 ? Math.round((rightDecisions.length / totalDecisions) * 100) : 0;
