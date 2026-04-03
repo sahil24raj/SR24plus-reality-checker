@@ -3,65 +3,138 @@ export interface AnalysisResult {
   uid: string;
   timestamp: string;
   input: string;
-  
+
+  // Standard fields
+  realityScore?: number;
+  confidence?: number;
+  tone?: string;
+  behavior?: string;
+  decisionQuality?: string;
+  sentiment?: string;
+
   // 1. CORE STATE ANALYSIS
   coreState?: {
     emotionalState: string;
-    mentalEnergy: string;
-    focusLevel: number;
-    disciplineLevel: number;
+    mentalEnergy: string;       // Low | Medium | High
+    focusLevel: number;         // 0-100
+    disciplineLevel: number;    // 0-100
     explanation: string;
   };
 
-  // 2. REALITY SCORE BREAKDOWN
+  // 2. LIFE SCORE SYSTEM
   realityScores?: {
+    lifeControlScore: number;
     disciplineScore: number;
     focusScore: number;
     consistencyScore: number;
     mentalStabilityScore: number;
     explanation: string;
   };
-  
-  // Legacy calculated overall Reality Score mapped for grid
-  realityScore?: number; 
-  confidence?: number;
-  tone?: string;
-  behavior?: string;
-  decisionQuality?: 'Correct' | 'Incorrect' | 'Uncertain';
-  sentiment?: string;
 
-  // 3. TRIGGER DETECTION
+  // 3. EXECUTION GAP ANALYSIS
+  executionGap?: {
+    plannedEffort: string;
+    actualExecution: string;
+    gapPercent: number;       // 0-100 (0 = perfect, 100 = nothing done)
+    mainIssue: string;
+  };
+
+  // 4. TRIGGER DETECTION ENGINE
   triggerDetection?: {
     trigger: string;
     explanation: string;
   };
 
-  // 4. BEHAVIOR TIMELINE ANALYSIS
+  // 5. BEHAVIOR TIMELINE ANALYSIS
   timelineAnalysis?: string;
 
-  // 5. PERSONALITY PROFILE
+  // 6. PERSONALITY PROFILE
   personalityProfile?: string[];
 
-  // 6. BEHAVIOR PATTERN
+  // 7. BEHAVIOR PATTERN (DEEP)
   behaviorPattern?: string;
 
-  // 7. PREDICTION ENGINE
+  // 8. FUTURE PREDICTION ENGINE
   futurePrediction?: string;
 
-  // 8. RECOVERY PROTOCOL
+  // 9. BURNOUT DETECTOR
+  burnoutRisk?: 'Low' | 'Medium' | 'High';
+  burnoutExplanation?: string;
+
+  // 10. DOPAMINE LOOP DETECTION
+  dopamineLoop?: boolean;
+  dopamineLoopExplanation?: string;
+
+  // 11. RECOVERY PROTOCOL
   recoveryProtocol?: string[];
 
-  // 9. NEXT DAY ACTION PLAN
+  // 12. NEXT DAY ACTION PLAN
   actionPlan?: string[];
 
-  // 10. GOAL ALIGNMENT CHECK
+  // 13. GOAL ALIGNMENT CHECK
   goalAlignment?: string;
 
-  // 11. AI COACH MESSAGE
+  // 14. MICRO-WIN DETECTION
+  microWins?: string[];
+
+  // 15. AI COACH MESSAGE
   aiCoachMessage?: string;
 
-  // 12. REALITY CHECK (BRUTAL MODE)
+  // 16. REALITY CHECK (BRUTAL MODE)
   brutalRealityCheck?: string;
+
+  // 17. DEEP SCAN ANALYSIS (ADVANCED)
+  deepScan?: {
+    lieDetection?: {
+      claimed: string;
+      actual: string;
+      excuse: string;
+      truth: string;
+    };
+    timeWaste?: {
+      productiveTime: string;
+      wastedTime: string;
+      dailyLoss: string;
+      monthlyLoss: string;
+      yearlyLoss: string;
+    };
+    decisionTree?: {
+      decisions: { activity: string; quality: 'Good' | 'Bad' }[];
+      rootCause: string;
+    };
+    relapseDetection?: {
+      daysImproved: number;
+      relapseDescription: string;
+    };
+    focusDecay?: {
+      start: number;
+      middle: number;
+      end: number;
+      insight: string;
+    };
+    selfControl?: {
+      score: number;
+      explanation: string;
+    };
+    procrastinationCost?: {
+      daily: string;
+      weekly: string;
+      monthly: string;
+      yearly: string;
+      finalLine: string;
+    };
+    failureLoop?: {
+      behavior: string;
+      frequencyDays: number;
+    };
+    alterEgo?: {
+      currentSelf: string;
+      idealSelf: string;
+      gap: string;
+      finalStatement: string;
+    };
+    microTask?: string;
+  };
 }
 
 export interface UserProfile {
@@ -70,13 +143,13 @@ export interface UserProfile {
   displayName?: string;
   photoURL?: string;
   createdAt: string;
-  longTermGoal?: string; // Newly added user goal
+  longTermGoal?: string;
 }
 
 export interface DailyReport {
   date: string;
   averageConfidence: number;
   dominantTone: string;
-  decisionScore: number; // Percentage of correct decisions
+  decisionScore: number;
   summary: string;
 }

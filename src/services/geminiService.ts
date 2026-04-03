@@ -1,81 +1,136 @@
 import { AnalysisResult } from "../types";
 
-// ─── API Provider Detection ───────────────────────────────────────────────────
-// Priority: GROQ_API_KEY > GROK_API_KEY > GEMINI_API_KEY
-// Just set the right env var in Vercel → it auto-switches provider
-const GROQ_KEY  = process.env.GROQ_API_KEY  || "";   // groq.com (FREE - 14,400/day, Llama 3.3 70B)
-const GROK_KEY  = process.env.GROK_API_KEY  || "";   // x.ai/grok ($25 credits)
-const GEMINI_KEY = process.env.GEMINI_API_KEY || "";  // Google Gemini (1500/day)
+// ─── Provider Detection ───────────────────────────────────────────────────────
+const GROQ_KEY   = process.env.GROQ_API_KEY  || "";
+const GROK_KEY   = process.env.GROK_API_KEY  || "";
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const PROVIDER   = GROQ_KEY ? "groq" : GROK_KEY ? "grok" : GEMINI_KEY ? "gemini" : "none";
 
-const PROVIDER = GROQ_KEY ? "groq" : GROK_KEY ? "grok" : GEMINI_KEY ? "gemini" : "none";
-
-// ─── Prompt ──────────────────────────────────────────────────────────────────
+// ─── Master Prompt (v3.3 Deep Scan Analysis) ─────────────────────────────
 function buildPrompt(log: string, past: string, goal: string): string {
-  return `You are a strict AI behavioral life coach. Analyze the log and return ONLY valid JSON (no markdown, no explanation outside JSON).
+  return `You are an advanced AI Life Intelligence System. Analyze the behavioral log below and return ONLY a valid JSON object.
 
-LOG: "${log.slice(0, 500)}"
-PAST LOGS: ${past}
-GOAL: ${goal}
+CURRENT LOG: "${log.slice(0, 800)}"
+PAST LOGS (context): ${past}
+USER GOAL: ${goal}
 
-Return exactly this JSON (strings max 100 chars, arrays max 3 items):
+--------------------------------------
+CORE MISSION:
+Analyze behavior, productivity, emotions, and decisions at a deep level. Detect patterns, calculate scores, identify triggers, analyze decisions, detect lies/excuses, calculate time waste, track relapse cycles, evaluate self-control, and generate predictions.
+
+TONE:
+Highly personalized, sharp, honest, and slightly strict. Use "you". 
+
+--------------------------------------
+OUTPUT FORMAT (STRICT JSON):
 {
   "emotionalState": "string",
   "mentalEnergy": "Low|Medium|High",
   "focusLevel": 0-100,
   "disciplineLevel": 0-100,
-  "coreExplanation": "2-3 lines about internal state",
+  "coreExplanation": "string (brief)",
+
+  "lifeControlScore": 0-100,
   "disciplineScore": 0-100,
   "focusScore": 0-100,
   "consistencyScore": 0-100,
   "mentalStabilityScore": 0-100,
-  "scoresExplanation": "brief explanation",
-  "trigger": "detected trigger or empty string",
-  "triggerExplanation": "explanation",
-  "timelineAnalysis": "pattern over time",
-  "personalityProfile": ["trait1", "trait2", "trait3"],
-  "behaviorPattern": "detected pattern",
-  "futurePrediction": "what will happen if this continues",
-  "recoveryProtocol": ["step1", "step2", "step3"],
-  "actionPlan": ["action1", "action2", "action3"],
-  "goalAlignment": "how aligned with goal",
-  "aiCoachMessage": "direct coach message",
-  "brutalRealityCheck": "harsh honest truth",
-  "decisionQuality": "Right|Wrong|Mixed",
-  "sentiment": "Positive|Negative|Mixed",
-  "tone": "Disciplined|Distracted|Motivated|Burned Out|Anxious|Focused|Regretful",
+  "scoresExplanation": "string (brief)",
+
+  "executionGap": {
+    "plannedEffort": "string",
+    "actualExecution": "string",
+    "gapPercent": 0-100,
+    "mainIssue": "string"
+  },
+
+  "trigger": "string",
+  "triggerExplanation": "string (Your main trigger is ____, causing ____)",
+
+  "timelineAnalysis": "string",
+  "personalityProfile": ["string"],
+  "behaviorPattern": "string",
+  "futurePrediction": "string (realistic 3-7 day prediction)",
+  
+  "deepScan": {
+    "lieDetection": {
+       "claimed": "string",
+       "actual": "string",
+       "excuse": "string",
+       "truth": "string"
+    },
+    "timeWaste": {
+       "productiveTime": "e.g. 4h",
+       "wastedTime": "e.g. 6h",
+       "dailyLoss": "string",
+       "monthlyLoss": "string",
+       "yearlyLoss": "string"
+    },
+    "decisionTree": {
+       "decisions": [{"activity": "string", "quality": "Good|Bad"}],
+       "rootCause": "string"
+    },
+    "relapseDetection": {
+       "daysImproved": number,
+       "relapseDescription": "string (focused on pattern from past logs)"
+    },
+    "focusDecay": {
+       "start": 0-100, "middle": 0-100, "end": 0-100,
+       "insight": "string"
+    },
+    "selfControl": {
+       "score": 0-100,
+       "explanation": "string (You lost control when ____)"
+    },
+    "procrastinationCost": {
+       "daily": "string", "weekly": "string", "monthly": "string", "yearly": "string",
+       "finalLine": "You are losing ____ hours of your life."
+    },
+    "failureLoop": {
+       "behavior": "string",
+       "frequencyDays": number
+    },
+    "alterEgo": {
+       "currentSelf": "string", "idealSelf": "string", "gap": "string",
+       "finalStatement": "You are acting like ____, not like your ideal self."
+    },
+    "microTask": "string (Just do this: ____)"
+  },
+
+  "burnoutRisk": "Low|Medium|High",
+  "burnoutExplanation": "string",
+  "dopamineLoop": boolean,
+  "dopamineLoopExplanation": "string",
+  "recoveryProtocol": ["string"],
+  "actionPlan": ["string"],
+  "goalAlignment": "string",
+  "microWins": ["string"],
+  "aiCoachMessage": "string (Strict + Motivating)",
+  "brutalRealityCheck": "string (If needed)",
+
+  "decisionQuality": "Good|Bad|Mixed",
+  "sentiment": "Positive|Negative|Neutral",
+  "tone": "string",
   "realityScore": 0-100,
-  "behavior": "summary of behavior",
+  "behavior": "string",
   "confidence": 0-100
 }`;
 }
 
-// ─── OpenAI-compatible call (used for both Groq and xAI Grok) ────────────────
-async function callOpenAICompat(
-  baseUrl: string,
-  apiKey: string,
-  model: string,
-  prompt: string
-): Promise<string> {
+// ─── OpenAI-compatible call (Groq + xAI Grok) ────────────────────────────────
+async function callOpenAICompat(baseUrl: string, key: string, model: string, prompt: string): Promise<string> {
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" },
-      temperature: 0.4,
-      max_tokens: 1500
+      temperature: 0.35,
+      max_tokens: 3000
     })
   });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`HTTP ${res.status}: ${err}`);
-  }
-
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content || "";
 }
@@ -84,7 +139,6 @@ async function callOpenAICompat(
 async function callGemini(prompt: string): Promise<string> {
   const MODELS = ["gemini-2.0-flash-001", "gemini-2.0-flash", "gemini-1.5-flash"];
   let lastErr: any = null;
-
   for (const model of MODELS) {
     try {
       const { GoogleGenAI } = await import("@google/genai");
@@ -97,8 +151,7 @@ async function callGemini(prompt: string): Promise<string> {
       return response.text || "";
     } catch (err: any) {
       lastErr = err;
-      const busy = err?.message?.includes("503") || err?.message?.includes("UNAVAILABLE");
-      if (busy) { console.warn(`${model} busy, trying next...`); continue; }
+      if (err?.message?.includes("503") || err?.message?.includes("UNAVAILABLE")) continue;
       throw err;
     }
   }
@@ -114,6 +167,7 @@ function mapResponse(flat: any): Partial<AnalysisResult> {
     decisionQuality: flat.decisionQuality ?? "Mixed",
     sentiment: flat.sentiment ?? "Neutral",
     realityScore: flat.realityScore ?? 50,
+
     coreState: {
       emotionalState: flat.emotionalState ?? "Unknown",
       mentalEnergy: flat.mentalEnergy ?? "Medium",
@@ -121,24 +175,45 @@ function mapResponse(flat: any): Partial<AnalysisResult> {
       disciplineLevel: flat.disciplineLevel ?? 50,
       explanation: flat.coreExplanation ?? "",
     },
+
     realityScores: {
+      lifeControlScore: flat.lifeControlScore ?? 50,
       disciplineScore: flat.disciplineScore ?? 50,
       focusScore: flat.focusScore ?? 50,
       consistencyScore: flat.consistencyScore ?? 50,
       mentalStabilityScore: flat.mentalStabilityScore ?? 50,
       explanation: flat.scoresExplanation ?? "",
     },
+
+    executionGap: {
+      plannedEffort: flat.executionGap?.plannedEffort ?? flat.plannedEffort ?? "Unknown",
+      actualExecution: flat.executionGap?.actualExecution ?? flat.actualExecution ?? "Unknown",
+      gapPercent: flat.executionGap?.gapPercent ?? flat.executionGapPercent ?? 0,
+      mainIssue: flat.executionGap?.mainIssue ?? flat.mainIssue ?? "",
+    },
+
     triggerDetection: flat.trigger ? {
       trigger: flat.trigger,
       explanation: flat.triggerExplanation ?? "",
     } : undefined,
+
     timelineAnalysis: flat.timelineAnalysis,
     personalityProfile: flat.personalityProfile ?? [],
     behaviorPattern: flat.behaviorPattern,
     futurePrediction: flat.futurePrediction,
+
+    deepScan: flat.deepScan,
+
+    burnoutRisk: flat.burnoutRisk as 'Low' | 'Medium' | 'High' ?? 'Low',
+    burnoutExplanation: flat.burnoutExplanation,
+
+    dopamineLoop: flat.dopamineLoop ?? false,
+    dopamineLoopExplanation: flat.dopamineLoopExplanation,
+
     recoveryProtocol: flat.recoveryProtocol ?? [],
-    actionPlan: flat.actionPlan ?? [],
+    actionPlan: flat.nextDayActionPlan ?? flat.actionPlan ?? [],
     goalAlignment: flat.goalAlignment,
+    microWins: flat.microWins ?? [],
     aiCoachMessage: flat.aiCoachMessage,
     brutalRealityCheck: flat.brutalRealityCheck,
   };
@@ -151,29 +226,26 @@ export async function analyzeRealityWithGemini(
   userGoal?: string
 ): Promise<Partial<AnalysisResult>> {
   const pastSummary = pastLogs.length > 0
-    ? pastLogs.slice(-5).map((l, i) => `[${i + 1}] ${l.slice(0, 60)}`).join("; ")
+    ? pastLogs.slice(-5).map((l, i) => `[${i + 1}] ${l.slice(0, 80)}`).join("; ")
     : "none";
 
-  const prompt = buildPrompt(currentLog, pastSummary, userGoal?.slice(0, 80) || "none");
+  const prompt = buildPrompt(currentLog, pastSummary, userGoal?.slice(0, 100) || "none");
 
   try {
     let rawText = "";
 
     if (PROVIDER === "groq") {
-      // groq.com — FREE, Ultra fast, Llama 3.3 70B
       rawText = await callOpenAICompat("https://api.groq.com/openai/v1", GROQ_KEY, "llama-3.3-70b-versatile", prompt);
     } else if (PROVIDER === "grok") {
-      // x.ai Grok
       rawText = await callOpenAICompat("https://api.x.ai/v1", GROK_KEY, "grok-3-mini", prompt);
     } else if (PROVIDER === "gemini") {
       rawText = await callGemini(prompt);
     } else {
-      throw new Error("No AI API key configured. Set GROQ_API_KEY, GROK_API_KEY, or GEMINI_API_KEY in Vercel environment variables.");
+      throw new Error("No AI API key found. Set GROQ_API_KEY, GROK_API_KEY, or GEMINI_API_KEY in Vercel environment variables.");
     }
 
     if (!rawText) throw new Error("Empty response from AI");
 
-    // Strip markdown code blocks if present (some models add them)
     const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const flat = JSON.parse(cleaned);
     return mapResponse(flat);
@@ -181,15 +253,14 @@ export async function analyzeRealityWithGemini(
   } catch (err: any) {
     console.error(`AI Analysis Failed [${PROVIDER}]:`, err);
     const msg = err?.message || "";
-
     if (msg.includes("401") || msg.includes("invalid_api_key") || msg.includes("Unauthorized")) {
-      throw new Error(`Invalid API key for ${PROVIDER.toUpperCase()}. Check your env variable in Vercel.`);
+      throw new Error(`Invalid API key. Check your ${PROVIDER.toUpperCase()}_API_KEY in Vercel.`);
     }
     if (msg.includes("429") || msg.includes("rate_limit")) {
       throw new Error("Rate limit hit. Wait a moment and try again.");
     }
     if (msg.includes("503") || msg.includes("UNAVAILABLE") || msg.includes("high demand")) {
-      throw new Error("AI model overloaded. Please try again in a moment.");
+      throw new Error("AI model is overloaded. Please try again in a moment.");
     }
     throw new Error(msg || "AI analysis failed. Please try again.");
   }

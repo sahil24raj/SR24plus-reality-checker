@@ -15,7 +15,20 @@ import {
   ChevronRight,
   Save,
   Trash2,
-  BarChart3
+  BarChart3,
+  Flame,
+  ShieldAlert,
+  Dna,
+  Fingerprint,
+  Timer,
+  GitBranch,
+  Ghost,
+  Scale,
+  UserPlus,
+  Target,
+  Cpu,
+  ChevronDown,
+  EyeOff
 } from 'lucide-react';
 import { format, startOfDay, subDays, isSameDay } from 'date-fns';
 import { 
@@ -377,24 +390,35 @@ const RealityInput = ({ onAnalyze, user, entries, userGoal }: { onAnalyze: (res:
         uid: user.uid,
         timestamp: new Date().toISOString(),
         input: text,
+        
+        // Standard fields
         confidence: result.confidence,
         tone: result.tone,
         behavior: result.behavior,
         decisionQuality: result.decisionQuality,
         sentiment: result.sentiment,
         realityScore: result.realityScore,
+
+        // 16-Step Intelligence fields
         coreState: result.coreState,
         realityScores: result.realityScores,
+        executionGap: result.executionGap,
         triggerDetection: result.triggerDetection,
         timelineAnalysis: result.timelineAnalysis,
         personalityProfile: result.personalityProfile,
         behaviorPattern: result.behaviorPattern,
         futurePrediction: result.futurePrediction,
+        burnoutRisk: result.burnoutRisk,
+        burnoutExplanation: result.burnoutExplanation,
+        dopamineLoop: result.dopamineLoop,
+        dopamineLoopExplanation: result.dopamineLoopExplanation,
         recoveryProtocol: result.recoveryProtocol,
         actionPlan: result.actionPlan,
         goalAlignment: result.goalAlignment,
+        microWins: result.microWins,
         aiCoachMessage: result.aiCoachMessage,
         brutalRealityCheck: result.brutalRealityCheck,
+        deepScan: result.deepScan,
       };
 
       try {
@@ -522,6 +546,188 @@ const RealityInput = ({ onAnalyze, user, entries, userGoal }: { onAnalyze: (res:
           </p>
         </div>
       </div>
+    </div>
+  );
+};
+
+const DeepScanResults = ({ data }: { data: AnalysisResult['deepScan'] }) => {
+  if (!data) return null;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      {/* A. LIE / EXCUSE DETECTION */}
+      {data.lieDetection && (
+        <div className="p-5 bg-red-500/5 border border-red-500/20 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 text-red-400 text-[10px] font-mono uppercase tracking-widest"><Fingerprint size={14} /> Lie Detection</div>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <div className="text-[8px] text-gray-500 uppercase">Input Claim</div>
+              <p className="text-xs text-gray-400 line-through opacity-50">{data.lieDetection.claimed}</p>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[8px] text-neon-green uppercase">Actual Reality</div>
+              <p className="text-xs text-neon-green/80 font-bold">{data.lieDetection.actual}</p>
+            </div>
+            <div className="p-2 bg-red-500/10 rounded-lg border border-red-500/10">
+              <span className="text-[8px] text-red-400 uppercase block mb-1">Excuse Factor</span>
+              <p className="text-[10px] text-red-300 italic">"{data.lieDetection.excuse}"</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* B. TIME WASTE ANALYSIS */}
+      {data.timeWaste && (
+        <div className="p-5 bg-neon-purple/5 border border-neon-purple/20 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 text-neon-purple text-[10px] font-mono uppercase tracking-widest"><Timer size={14} /> Time Analysis</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="text-[8px] text-gray-500 uppercase">Productive</div>
+              <div className="text-xl font-black text-neon-green">{data.timeWaste.productiveTime}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[8px] text-gray-500 uppercase">Wasted</div>
+              <div className="text-xl font-black text-red-500">{data.timeWaste.wastedTime}</div>
+            </div>
+          </div>
+          <div className="pt-2 border-t border-white/5 space-y-1">
+            <div className="flex justify-between text-[10px]">
+              <span className="text-gray-500">Monthly Loss</span>
+              <span className="text-red-400 font-mono">{data.timeWaste.monthlyLoss}</span>
+            </div>
+            <div className="flex justify-between text-[10px]">
+              <span className="text-gray-500">Yearly Proj.</span>
+              <span className="text-red-500 font-black font-mono">{data.timeWaste.yearlyLoss}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* C. DECISION TREE */}
+      {data.decisionTree && (
+        <div className="p-5 bg-white/5 border border-white/10 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 text-gray-400 text-[10px] font-mono uppercase tracking-widest"><GitBranch size={14} /> Decision Tree</div>
+          <div className="space-y-2">
+            {data.decisionTree.decisions.map((d: any, i: number) => (
+              <div key={i} className="flex items-center gap-3 text-[10px] p-2 bg-white/5 rounded-lg border border-white/5">
+                <div className={`w-1.5 h-1.5 rounded-full ${d.quality === 'Good' ? 'bg-neon-green' : 'bg-red-500'}`} />
+                <span className="flex-1 text-gray-400 truncate">{d.activity}</span>
+                <span className={`font-mono text-[8px] ${d.quality === 'Good' ? 'text-neon-green' : 'text-red-500'}`}>{d.quality}</span>
+              </div>
+            ))}
+            <div className="mt-3 p-2 bg-neon-cyan/5 border border-neon-cyan/20 rounded-lg">
+              <span className="text-[8px] text-neon-cyan uppercase font-mono">Root Cause</span>
+              <p className="text-[10px] text-gray-300 font-bold">{data.decisionTree.rootCause}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* D. RELAPSE DETECTION */}
+      {data.relapseDetection && (
+        <div className="p-5 bg-orange-500/5 border border-orange-500/20 rounded-2xl space-y-3">
+          <div className="flex items-center gap-2 text-orange-400 text-[10px] font-mono uppercase tracking-widest"><HistoryIcon size={14} /> Relapse Cycle</div>
+          <div className="text-2xl font-black text-white">{data.relapseDetection.daysImproved} Days <span className="text-[8px] font-mono text-gray-500 uppercase">Streak</span></div>
+          <p className="text-[10px] text-orange-200/70 italic leading-relaxed">"{data.relapseDetection.relapseDescription}"</p>
+        </div>
+      )}
+
+      {/* E. FOCUS DECAY */}
+      {data.focusDecay && (
+        <div className="p-5 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 text-neon-cyan text-[10px] font-mono uppercase tracking-widest"><TrendingUp size={14} /> Focus Decay</div>
+          <div className="flex items-end gap-1 h-12 pt-2">
+            {[data.focusDecay.start, data.focusDecay.middle, data.focusDecay.end].map((v, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full bg-neon-cyan/20 rounded-t-sm relative" style={{ height: `${v}%` }}>
+                  <div className="absolute top-0 left-0 w-full h-0.5 bg-neon-cyan" />
+                </div>
+                <span className="text-[8px] font-mono text-gray-500">{['S', 'M', 'E'][i]}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400 leading-relaxed italic border-l border-neon-cyan/30 pl-3">"{data.focusDecay.insight}"</p>
+        </div>
+      )}
+
+      {/* F. SELF-CONTROL SCORE */}
+      {data.selfControl && (
+        <div className="p-5 bg-neon-green/5 border border-neon-green/20 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 text-neon-green text-[10px] font-mono uppercase tracking-widest"><Scale size={14} /> Self-Control</div>
+          <div className="flex items-center gap-4">
+            <div className="text-3xl font-black text-white">{data.selfControl.score}</div>
+            <div className="flex-1 h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+              <div className="h-full bg-neon-green rounded-full shadow-[0_0_10px_rgba(20,255,159,0.5)]" style={{ width: `${data.selfControl.score}%` }} />
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-500 italic">"{data.selfControl.explanation}"</p>
+        </div>
+      )}
+
+      {/* G. PROCRASTINATION COST */}
+      {data.procrastinationCost && (
+        <div className="p-5 bg-red-500/10 border border-red-500/30 rounded-2xl relative overflow-hidden group">
+          <div className="flex items-center gap-2 text-red-400 text-[10px] font-mono uppercase tracking-widest"><EyeOff size={14} /> Neural Debt</div>
+          <div className="mt-4 space-y-3 relative z-10">
+            <div className="text-2xl font-black text-white tracking-tighter">{data.procrastinationCost.daily} <span className="text-[8px] text-red-500 font-mono">/ DAY</span></div>
+            <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
+              <div className="text-gray-500">Weekly: <span className="text-gray-300">{data.procrastinationCost.weekly}</span></div>
+              <div className="text-gray-500">Yearly: <span className="text-red-400 font-bold">{data.procrastinationCost.yearly}</span></div>
+            </div>
+            <p className="text-[10px] text-red-500 font-black mt-2 pt-2 border-t border-red-500/20">{data.procrastinationCost.finalLine}</p>
+          </div>
+        </div>
+      )}
+
+      {/* H. FAILURE LOOP */}
+      {data.failureLoop && (
+        <div className="p-5 bg-purple-500/5 border border-purple-500/20 rounded-2xl space-y-3">
+          <div className="flex items-center gap-2 text-purple-400 text-[10px] font-mono uppercase tracking-widest"><Ghost size={14} /> Loop Detection</div>
+          <div className="text-[8px] text-gray-500 uppercase">Repeat Behavior</div>
+          <p className="text-xs text-purple-300 font-bold line-clamp-2">"{data.failureLoop.behavior}"</p>
+          <div className="pt-2 flex items-center justify-between">
+            <span className="text-[8px] text-gray-500 uppercase font-mono">Frequency</span>
+            <span className="px-2 py-0.5 bg-purple-500/20 rounded text-purple-300 text-[9px] font-black border border-purple-500/30">LOCKED EVERY {data.failureLoop.frequencyDays} DAYS</span>
+          </div>
+        </div>
+      )}
+
+      {/* I. ALTER EGO ANALYSIS */}
+      {data.alterEgo && (
+        <div className="p-5 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl relative overflow-hidden">
+          <div className="flex items-center gap-2 text-neon-cyan text-[10px] font-mono uppercase tracking-widest"><UserPlus size={14} /> Alter Ego</div>
+          <div className="mt-4 grid grid-cols-2 gap-4 relative z-10">
+            <div className="space-y-0.5">
+              <span className="text-[8px] text-gray-600 uppercase">Current</span>
+              <p className="text-[10px] text-gray-400 font-bold italic line-clamp-1">"{data.alterEgo.currentSelf}"</p>
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[8px] text-neon-cyan uppercase">Ideal</span>
+              <p className="text-[10px] text-white font-bold italic line-clamp-1">"{data.alterEgo.idealSelf}"</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+            <p className="text-[10px] text-gray-500 italic leading-relaxed line-clamp-2">"Gap: {data.alterEgo.gap}"</p>
+            <p className="text-[10px] text-neon-cyan font-black uppercase tracking-wider">{data.alterEgo.finalStatement}</p>
+          </div>
+        </div>
+      )}
+
+      {/* J. MICRO-TASK */}
+      {data.microTask && (
+        <div className="md:col-span-2 lg:col-span-3 p-4 bg-gradient-to-r from-neon-cyan/20 to-neon-purple/20 border border-white/10 rounded-2xl flex items-center justify-between gap-6 hover:scale-[1.01] transition-all cursor-pointer group">
+          <div className="flex items-center gap-4">
+             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0 border border-white/10 group-hover:border-neon-cyan/50 transition-colors">
+                <Target size={20} className="text-neon-cyan" />
+             </div>
+             <div>
+                <div className="text-[9px] text-gray-500 uppercase font-mono tracking-widest">Neural Impulse</div>
+                <div className="text-sm font-black text-white">{data.microTask}</div>
+             </div>
+          </div>
+          <div className="px-4 py-2 bg-neon-cyan text-black rounded-lg text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(0,243,255,0.4)] group-hover:scale-110 transition-all">Execute</div>
+        </div>
+      )}
     </div>
   );
 };
@@ -814,6 +1020,100 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
         </div>
       </div>
 
+      {/* Neural Indicators & Execution Gap */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="glass-card p-8 border-neon-cyan/10 space-y-6"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-mono uppercase tracking-[0.3em] flex items-center gap-3 text-neon-cyan">
+              <Activity size={18} />
+              Neural Health Indicators
+            </h3>
+            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Biometric Analysis</div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className={cn(
+              "p-4 rounded-2xl border transition-all",
+              latestEntry?.burnoutRisk === 'High' ? "bg-red-500/10 border-red-500/20" :
+              latestEntry?.burnoutRisk === 'Medium' ? "bg-neon-yellow/10 border-neon-yellow/20" :
+              "bg-neon-green/10 border-neon-green/20"
+            )}>
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldAlert size={14} className={latestEntry?.burnoutRisk === 'High' ? "text-red-400" : "text-neon-cyan"} />
+                <span className="text-[10px] font-mono text-gray-400 uppercase">Burnout Risk</span>
+              </div>
+              <div className={cn(
+                "text-2xl font-black",
+                latestEntry?.burnoutRisk === 'High' ? "text-red-400" :
+                latestEntry?.burnoutRisk === 'Medium' ? "text-neon-yellow" : "text-neon-green"
+              )}>{latestEntry?.burnoutRisk || 'Low'}</div>
+            </div>
+
+            <div className={cn(
+              "p-4 rounded-2xl border transition-all",
+              latestEntry?.dopamineLoop ? "bg-orange-500/10 border-orange-500/20" : "bg-neon-green/10 border-neon-green/20"
+            )}>
+              <div className="flex items-center gap-2 mb-2">
+                <Dna size={14} className={latestEntry?.dopamineLoop ? "text-orange-400" : "text-neon-green"} />
+                <span className="text-[10px] font-mono text-gray-400 uppercase">Dopamine Loop</span>
+              </div>
+              <div className={cn(
+                "text-2xl font-black",
+                latestEntry?.dopamineLoop ? "text-orange-400" : "text-neon-green"
+              )}>{latestEntry?.dopamineLoop ? '⚠ DETECTED' : '✓ CLEAR'}</div>
+            </div>
+          </div>
+          
+          <p className="text-xs text-gray-500 italic leading-relaxed">
+            {latestEntry?.burnoutExplanation || latestEntry?.dopamineLoopExplanation || "Neural health metrics are within optimal parameters."}
+          </p>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="glass-card p-8 border-neon-yellow/10 space-y-6"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-mono uppercase tracking-[0.3em] flex items-center gap-3 text-neon-yellow">
+              <Flame size={18} />
+              Execution Gap Analysis
+            </h3>
+            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Planned vs Actual</div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-3xl font-black text-white">{latestEntry?.executionGap ? 100 - latestEntry.executionGap.gapPercent : 0}%</div>
+                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Execution Efficiency</div>
+              </div>
+              <div className="text-right space-y-1">
+                <div className="text-lg font-bold text-neon-yellow">{latestEntry?.executionGap?.gapPercent || 0}%</div>
+                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Missed Targets</div>
+              </div>
+            </div>
+
+            <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${latestEntry?.executionGap ? 100 - latestEntry.executionGap.gapPercent : 0}%` }}
+                className="h-full bg-gradient-to-r from-neon-yellow to-orange-500 shadow-[0_0_20px_rgba(255,200,0,0.4)]"
+              />
+            </div>
+
+            <div className="p-4 bg-neon-yellow/5 border border-neon-yellow/10 rounded-2xl">
+              <div className="text-[9px] font-mono text-neon-yellow uppercase mb-1">Diagnostic</div>
+              <p className="text-xs text-gray-300 leading-relaxed italic">"{latestEntry?.executionGap?.mainIssue || "Establishing baseline execution data..."}"</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       {/* Neural Balance & Profile Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Neural Balance (Right vs Wrong) */}
@@ -918,106 +1218,170 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
       {/* Latest Analysis */}
       <div className="space-y-4">
         <h3 className="text-sm font-mono uppercase tracking-widest text-gray-400">Latest Neural Scan</h3>
-        <div className="glass-card p-8 border-neon-cyan/10">
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="flex-1 space-y-6">
-              <div className="space-y-2">
+        <div className="glass-card p-8 border-neon-cyan/10 space-y-6">
+          {/* Input + Top Scores */}
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1 space-y-4">
+              <div className="space-y-1">
                 <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Input Fragment</div>
-                <p className="text-lg text-gray-300 leading-relaxed italic">"{entries[entries.length-1].input}"</p>
+                <p className="text-base text-gray-300 leading-relaxed italic">"{entries[entries.length-1].input?.slice(0, 200)}{(entries[entries.length-1].input?.length || 0) > 200 ? '...' : ''}"</p>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Reality Score</div>
-                  <div className="text-neon-cyan font-black text-xl">{entries[entries.length-1].realityScore || 0}</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-center">
+                  <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Reality Score</div>
+                  <div className="text-neon-cyan font-black text-2xl">{entries[entries.length-1].realityScore || 0}</div>
                 </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Tone Detected</div>
-                  <div className="text-neon-purple font-bold text-xl">{entries[entries.length-1].tone}</div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-center">
+                  <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Life Control</div>
+                  <div className="text-neon-purple font-black text-2xl">{entries[entries.length-1].realityScores?.lifeControlScore || 0}</div>
+                </div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-center">
+                  <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Tone</div>
+                  <div className="text-neon-green font-bold text-xs mt-1">{entries[entries.length-1].tone}</div>
                 </div>
               </div>
-              
+
               {/* AI Coach Message */}
               {entries[entries.length-1].aiCoachMessage && (
-                <div className="p-4 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl space-y-2">
-                  <div className="text-[10px] font-mono text-neon-cyan uppercase tracking-widest flex items-center gap-2">
-                    <Brain size={14} /> AI Coach
-                  </div>
-                  <p className="text-sm text-gray-300 italic">"{entries[entries.length-1].aiCoachMessage}"</p>
+                <div className="p-4 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl">
+                  <div className="text-[10px] font-mono text-neon-cyan uppercase tracking-widest flex items-center gap-2 mb-2"><Brain size={13} /> AI Life Coach</div>
+                  <p className="text-sm text-gray-200 italic leading-relaxed">"{entries[entries.length-1].aiCoachMessage}"</p>
                 </div>
               )}
 
-              {/* Trigger Detection */}
-              {entries[entries.length-1].triggerDetection?.trigger && (
-                <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl space-y-2">
-                  <div className="text-[10px] font-mono text-red-400 uppercase tracking-widest flex items-center gap-2">
-                    <Zap size={14} /> Trigger Detected
-                  </div>
-                  <p className="text-sm font-bold text-red-300">{entries[entries.length-1].triggerDetection?.trigger}</p>
-                  <p className="text-xs text-gray-400">{entries[entries.length-1].triggerDetection?.explanation}</p>
-                </div>
-              )}
-
-              {entries[entries.length-1].futurePrediction && (
+              {/* Execution Gap */}
+              {entries[entries.length-1].executionGap?.mainIssue && (
                 <div className="p-4 bg-neon-yellow/5 border border-neon-yellow/20 rounded-2xl space-y-2">
-                  <div className="text-[10px] font-mono text-neon-yellow uppercase tracking-widest flex items-center gap-2">
-                    <TrendingUp size={14} /> Prediction
+                  <div className="text-[10px] font-mono text-neon-yellow uppercase tracking-widest flex items-center gap-2"><BarChart3 size={13} /> Execution Gap — {entries[entries.length-1].executionGap?.gapPercent}%</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-white/5 p-2 rounded-lg"><span className="text-gray-500">Planned: </span><span className="text-gray-300">{entries[entries.length-1].executionGap?.plannedEffort}</span></div>
+                    <div className="bg-white/5 p-2 rounded-lg"><span className="text-gray-500">Done: </span><span className="text-gray-300">{entries[entries.length-1].executionGap?.actualExecution}</span></div>
                   </div>
+                  <p className="text-xs text-neon-yellow/80">{entries[entries.length-1].executionGap?.mainIssue}</p>
+                </div>
+              )}
+
+              {/* Trigger */}
+              {entries[entries.length-1].triggerDetection?.trigger && (
+                <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl">
+                  <div className="text-[10px] font-mono text-red-400 uppercase tracking-widest flex items-center gap-2 mb-1"><Zap size={13} /> Trigger</div>
+                  <p className="text-sm text-red-300">{entries[entries.length-1].triggerDetection?.explanation}</p>
+                </div>
+              )}
+
+              {/* Burnout + Dopamine */}
+              <div className="grid grid-cols-2 gap-3">
+                {entries[entries.length-1].burnoutRisk && (
+                  <div className={`p-3 rounded-xl border text-center ${
+                    entries[entries.length-1].burnoutRisk === 'High' ? 'bg-red-500/10 border-red-500/30' :
+                    entries[entries.length-1].burnoutRisk === 'Medium' ? 'bg-neon-yellow/10 border-neon-yellow/30' :
+                    'bg-neon-green/10 border-neon-green/30'}`}>
+                    <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Burnout Risk</div>
+                    <div className={`font-black text-sm ${
+                      entries[entries.length-1].burnoutRisk === 'High' ? 'text-red-400' :
+                      entries[entries.length-1].burnoutRisk === 'Medium' ? 'text-neon-yellow' : 'text-neon-green'}`}>
+                      {entries[entries.length-1].burnoutRisk}
+                    </div>
+                  </div>
+                )}
+                {entries[entries.length-1].dopamineLoop !== undefined && (
+                  <div className={`p-3 rounded-xl border text-center ${entries[entries.length-1].dopamineLoop ? 'bg-orange-500/10 border-orange-500/30' : 'bg-neon-green/10 border-neon-green/30'}`}>
+                    <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Dopamine Loop</div>
+                    <div className={`font-black text-sm ${entries[entries.length-1].dopamineLoop ? 'text-orange-400' : 'text-neon-green'}`}>
+                      {entries[entries.length-1].dopamineLoop ? '⚠ DETECTED' : '✓ CLEAR'}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {entries[entries.length-1].dopamineLoopExplanation && entries[entries.length-1].dopamineLoop && (
+                <p className="text-xs text-orange-300 bg-orange-500/5 border border-orange-500/10 p-3 rounded-lg">{entries[entries.length-1].dopamineLoopExplanation}</p>
+              )}
+
+              {/* Future Prediction */}
+              {entries[entries.length-1].futurePrediction && (
+                <div className="p-4 bg-neon-purple/5 border border-neon-purple/20 rounded-2xl">
+                  <div className="text-[10px] font-mono text-neon-purple uppercase tracking-widest flex items-center gap-2 mb-1"><TrendingUp size={13} /> Future Prediction</div>
                   <p className="text-sm text-gray-300">{entries[entries.length-1].futurePrediction}</p>
                 </div>
               )}
             </div>
 
-            <div className="w-full md:w-80 space-y-6">
-              {/* AI Recommendations */}
-              <div className="space-y-3">
-                <div className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 mb-2 p-3 bg-neon-cyan/20 rounded-xl">
-                   🔥 Action Plan
-                </div>
+            {/* Right Column */}
+            <div className="w-full md:w-72 space-y-4">
+              {/* Next Day Action Plan */}
+              <div className="space-y-2">
+                <div className="text-xs font-black text-white uppercase tracking-widest p-3 bg-neon-cyan/20 rounded-xl flex items-center gap-2">🚀 Next Day Action Plan</div>
                 <div className="space-y-2">
-                  {(entries[entries.length-1].actionPlan || entries[entries.length-1].recoveryProtocol)?.map((rec, i) => (
+                  {entries[entries.length-1].actionPlan?.map((a, i) => (
                     <div key={i} className="flex gap-3 text-sm text-gray-300 p-3 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-neon-cyan font-black mt-0.5">{i+1}.</span>
-                      {rec}
+                      <span className="text-neon-cyan font-black shrink-0">{i+1}.</span>{a}
                     </div>
-                  )) || <div className="text-xs text-gray-500 italic">No plan available.</div>}
+                  )) || <div className="text-xs text-gray-500 italic">No plan yet.</div>}
                 </div>
               </div>
 
-              {/* Goal Alignment */}
-              {entries[entries.length-1].goalAlignment && (
-                <div className="space-y-2">
-                  <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Goal Alignment</div>
-                  <div className="text-sm text-gray-300 bg-white/5 p-3 rounded-lg border border-white/5">
-                    {entries[entries.length-1].goalAlignment}
-                  </div>
-                </div>
-              )}
-
               {/* Recovery Protocol */}
-              {entries[entries.length-1].recoveryProtocol && entries[entries.length-1].recoveryProtocol!.length > 0 && (
+              {(entries[entries.length-1].recoveryProtocol?.length || 0) > 0 && (
                 <div className="space-y-2">
-                  <div className="text-[10px] font-mono text-neon-green uppercase tracking-[0.2em]">⚡ Recovery Protocol</div>
-                  <div className="space-y-2">
-                    {entries[entries.length-1].recoveryProtocol?.map((step, i) => (
-                      <div key={i} className="flex gap-3 text-xs text-gray-400 bg-neon-green/5 border border-neon-green/10 p-2 rounded-lg">
-                        <span className="text-neon-green font-mono">{i + 1}.</span>
-                        {step}
+                  <div className="text-[10px] font-mono text-neon-green uppercase tracking-widest">⚡ Recovery Protocol</div>
+                  <div className="space-y-1">
+                    {entries[entries.length-1].recoveryProtocol?.map((s, i) => (
+                      <div key={i} className="flex gap-2 text-xs text-gray-400 bg-neon-green/5 border border-neon-green/10 p-2 rounded-lg">
+                        <span className="text-neon-green font-mono shrink-0">{i+1}.</span>{s}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Micro Wins */}
+              {(entries[entries.length-1].microWins?.length || 0) > 0 && (
+                <div className="space-y-2">
+                  <div className="text-[10px] font-mono text-neon-yellow uppercase tracking-widest">🏆 Micro Wins</div>
+                  <div className="space-y-1">
+                    {entries[entries.length-1].microWins?.map((w, i) => (
+                      <div key={i} className="text-xs text-neon-yellow/80 bg-neon-yellow/5 border border-neon-yellow/10 p-2 rounded-lg flex items-center gap-2">
+                        <span>✓</span>{w}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Goal Alignment */}
+              {entries[entries.length-1].goalAlignment && (
+                <div className="space-y-1">
+                  <div className="text-[10px] font-mono text-gray-500 uppercase">🎯 Goal Alignment</div>
+                  <div className="text-xs text-gray-300 bg-white/5 p-3 rounded-lg border border-white/5">{entries[entries.length-1].goalAlignment}</div>
+                </div>
+              )}
+
               {/* Brutal Reality Check */}
               {entries[entries.length-1].brutalRealityCheck && (
                 <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="text-[10px] font-mono text-red-400 uppercase mb-1">⚠️ Reality Check</div>
-                  <p className="text-xs text-red-300">{entries[entries.length-1].brutalRealityCheck}</p>
+                  <div className="text-[10px] font-mono text-red-400 uppercase mb-1">⚠️ Brutal Reality</div>
+                  <p className="text-xs text-red-300 font-bold">{entries[entries.length-1].brutalRealityCheck}</p>
                 </div>
               )}
             </div>
           </div>
+
+          {/* DEEP SCAN ANALYSIS (ADVANCED) */}
+          {entries[entries.length-1].deepScan && (
+            <div className="pt-8 border-t border-white/5 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-neon-cyan/20 rounded-lg flex items-center justify-center border border-neon-cyan/30">
+                  <Cpu size={16} className="text-neon-cyan" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-[0.4em]">Deep Scan Analysis</h4>
+                  <p className="text-[10px] text-gray-500 font-mono uppercase">Neural Diagnostic v3.3 • Premium Lab Access</p>
+                </div>
+              </div>
+              
+              <DeepScanResults data={entries[entries.length-1].deepScan} />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1121,36 +1485,46 @@ const Profile = ({ user, entries, userGoal, onSaveGoal }: { user: User, entries:
         <motion.div whileHover={{ y: -5 }} className="glass-card p-8 border-neon-cyan/10">
           <h4 className="text-xs font-mono uppercase tracking-[0.3em] mb-6 flex items-center gap-3 text-neon-cyan">
             <Brain size={18} />
-            Personality Profile
+            Aggregated Neural Profile
           </h4>
           <div className="space-y-3">
-            {entries.length > 0 && entries[entries.length - 1].personalityProfile?.map((trait, i) => (
+            {entries.length > 0 ? Array.from(new Set(entries.flatMap(e => e.personalityProfile || []))).slice(0, 8).map((trait, i) => (
               <div key={i} className="flex items-start gap-3 p-3 bg-neon-cyan/5 border border-neon-cyan/10 rounded-xl">
                 <span className="text-neon-cyan font-black text-sm mt-0.5">{i + 1}.</span>
                 <span className="text-sm text-gray-300">{trait}</span>
               </div>
-            ))}
-            {entries.length === 0 && <span className="text-xs text-gray-600 italic">No data analyzed yet. Run a scan to build your profile.</span>}
+            )) : (
+              <span className="text-xs text-gray-600 italic">No neural data analyzed yet. Run a scan to synthesize your profile.</span>
+            )}
           </div>
         </motion.div>
 
-        {/* Behavior Pattern */}
+        {/* Dynamic Behavior DNA */}
         <motion.div whileHover={{ y: -5 }} className="glass-card p-8 border-neon-purple/10">
           <h4 className="text-xs font-mono uppercase tracking-[0.3em] mb-6 flex items-center gap-3 text-neon-purple">
             <Activity size={18} />
-            Behavior Pattern
+            Recent Behavioral DNA
           </h4>
-          {entries.length > 0 && entries[entries.length - 1].behaviorPattern ? (
-            <p className="text-sm text-gray-300 leading-relaxed italic">"{entries[entries.length - 1].behaviorPattern}"</p>
-          ) : (
-            <span className="text-xs text-gray-600 italic">No pattern detected yet.</span>
-          )}
-          {entries.length > 0 && entries[entries.length - 1].brutalRealityCheck && (
-            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-              <div className="text-[10px] font-mono text-red-400 uppercase mb-1">⚠️ Reality Check</div>
-              <p className="text-xs text-red-300">{entries[entries.length - 1].brutalRealityCheck}</p>
-            </div>
-          )}
+          <div className="space-y-4">
+            {entries.length > 0 ? (
+              <div className="space-y-6">
+                <p className="text-sm text-gray-300 leading-relaxed italic border-l-2 border-neon-purple/30 pl-4">
+                  "{entries[entries.length - 1].behaviorPattern}"
+                </p>
+                <div className="pt-4 border-t border-white/5 space-y-3">
+                  <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Core Behavioral Triggers</div>
+                  {entries.slice(-3).reverse().map((e, i) => e.triggerDetection && (
+                    <div key={i} className="flex items-center gap-3 text-[10px] text-gray-400">
+                      <Zap size={10} className="text-red-400" />
+                      <span className="line-clamp-1">{e.triggerDetection.trigger}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <span className="text-xs text-gray-600 italic">No behavioral dna detected yet.</span>
+            )}
+          </div>
         </motion.div>
       </div>
 
@@ -1215,67 +1589,199 @@ const Profile = ({ user, entries, userGoal, onSaveGoal }: { user: User, entries:
   );
 };
 
+const HistoryItem: React.FC<{ entry: AnalysisResult, onDelete: (id: string) => void }> = ({ entry, onDelete }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  // ... rest of the implementation is the same, just changing the signature to satisfy the linter
+  // I need to provide the FULL implementation of the component since I'm replacing the block
+  return (
+    <motion.div 
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        "glass-card group transition-all relative overflow-hidden",
+        isExpanded ? "p-8 border-neon-cyan/40" : "p-6 cursor-pointer hover:border-white/20"
+      )}
+      onClick={() => !isExpanded && setIsExpanded(true)}
+    >
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-neon-cyan to-neon-purple opacity-40" />
+      
+      <div className="flex flex-col gap-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                <div className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse" />
+                <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                  {format(new Date(entry.timestamp), 'MMM dd, yyyy • HH:mm')}
+                </span>
+              </div>
+              <div className={cn(
+                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                entry.decisionQuality === 'Correct' ? "bg-neon-green/10 border-neon-green/20 text-neon-green" :
+                entry.decisionQuality === 'Incorrect' ? "bg-red-500/10 border-red-500/20 text-red-400" :
+                "bg-gray-500/10 border-white/10 text-gray-400"
+              )}>
+                {entry.decisionQuality}
+              </div>
+              {entry.burnoutRisk === 'High' && (
+                <div className="px-2 py-1 bg-red-500/20 rounded border border-red-500/30 text-red-400 text-[8px] font-bold uppercase flex items-center gap-1.5">
+                  <ShieldAlert size={10} /> Burnout Risk
+                </div>
+              )}
+              {entry.dopamineLoop && (
+                <div className="px-2 py-1 bg-orange-500/20 rounded border border-orange-500/30 text-orange-400 text-[8px] font-bold uppercase flex items-center gap-1.5">
+                  <Dna size={10} /> Dopamine Loop
+                </div>
+              )}
+            </div>
+            
+            <p className={cn(
+              "text-gray-200 leading-relaxed italic font-medium transition-all",
+              isExpanded ? "text-xl" : "text-base line-clamp-1"
+            )}>
+              "{entry.input}"
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {isExpanded && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
+                className="p-2 text-gray-500 hover:text-white transition-colors"
+              >
+                <Plus className="rotate-45" size={20} />
+              </button>
+            )}
+            <button 
+              onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}
+              className="p-2 bg-red-500/5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all border border-transparent hover:border-red-500/20"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        </div>
+
+        {!isExpanded && (
+          <div className="flex gap-8 border-t border-white/5 pt-4">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-mono text-gray-500 uppercase tracking-widest">Reality Score</span>
+              <span className="text-lg font-black text-neon-cyan">{entry.realityScore}%</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8px] font-mono text-gray-500 uppercase tracking-widest">Tone Matrix</span>
+              <span className="text-lg font-black text-neon-purple">{entry.tone}</span>
+            </div>
+            {entry.executionGap && (
+              <div className="flex flex-col">
+                <span className="text-[8px] font-mono text-gray-500 uppercase tracking-widest">Execution</span>
+                <span className="text-lg font-black text-neon-yellow">{100 - entry.executionGap.gapPercent}%</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-6 pt-6 border-t border-white/10"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Life Control</div>
+                      <div className="text-neon-cyan font-black text-xl">{entry.realityScores?.lifeControlScore || entry.realityScore}%</div>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Discipline</div>
+                      <div className="text-neon-purple font-black text-xl">{entry.realityScores?.disciplineScore || entry.confidence}%</div>
+                    </div>
+                  </div>
+
+                  {entry.aiCoachMessage && (
+                    <div className="p-5 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl italic text-sm text-gray-300 leading-relaxed shadow-inner">
+                      <div className="text-[9px] font-mono text-neon-cyan uppercase mb-2 flex items-center gap-2"><Brain size={12} /> AI Coach Reflection</div>
+                      "{entry.aiCoachMessage}"
+                    </div>
+                  )}
+
+                  {entry.executionGap && (
+                    <div className="p-5 bg-neon-yellow/5 border border-neon-yellow/20 rounded-2xl space-y-3">
+                      <div className="text-[9px] font-mono text-neon-yellow uppercase flex items-center gap-2"><Flame size={12}/> Execution Gap — {entry.executionGap.gapPercent}%</div>
+                      <p className="text-xs text-neon-yellow/80 font-medium font-mono">{entry.executionGap.mainIssue}</p>
+                      <div className="grid grid-cols-2 gap-3 text-[10px]">
+                        <div className="bg-white/5 p-2 rounded-lg"><span className="text-gray-500">Target: </span>{entry.executionGap.plannedEffort}</div>
+                        <div className="bg-white/5 p-2 rounded-lg"><span className="text-gray-500">Actual: </span>{entry.executionGap.actualExecution}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <div className="text-[10px] font-mono text-white uppercase tracking-widest bg-white/10 p-3 rounded-xl flex items-center gap-2">🚀 Tactical Action Plan</div>
+                    <div className="space-y-2">
+                      {entry.actionPlan?.map((step, i) => (
+                        <div key={i} className="flex gap-3 text-xs text-gray-400 p-3 bg-white/5 rounded-xl border border-white/5">
+                          <span className="text-neon-cyan font-black">{i+1}.</span>{step}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {entry.brutalRealityCheck && (
+                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
+                      <div className="text-[10px] font-mono text-red-500 uppercase mb-2 flex items-center gap-2">⚠️ Brutal Reality</div>
+                      <p className="text-[11px] text-red-300 italic">"{entry.brutalRealityCheck}"</p>
+                    </div>
+                  )}
+
+                  {/* DEEP SCAN INTEGRATION IN HISTORY */}
+                  {entry.deepScan && (
+                    <div className="pt-6 border-t border-white/5 space-y-4">
+                      <div className="flex items-center gap-2 text-[10px] font-mono text-neon-cyan uppercase tracking-widest">
+                        <Cpu size={12} /> Deep Scan Results
+                      </div>
+                      <DeepScanResults data={entry.deepScan} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+};
+
 const History = ({ entries, onDelete }: { entries: AnalysisResult[], onDelete: (id: string) => void }) => {
   return (
     <div className="max-w-4xl mx-auto pt-12 space-y-8 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-4xl font-black italic tracking-tighter neon-text-cyan">Neural Archives</h2>
-        <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest">{entries.length} Records</div>
+        <div className="space-y-1">
+          <h2 className="text-4xl font-black italic tracking-tighter neon-text-cyan">Neural Archives</h2>
+          <p className="text-[10px] font-mono text-gray-600 uppercase tracking-[0.3em]">Chronological Behavioral Timeline</p>
+        </div>
+        <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+          {entries.length} Synced Records
+        </div>
       </div>
 
-      <div className="space-y-6">
-        {entries.slice().reverse().map((entry) => (
-          <motion.div 
-            key={entry.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            whileHover={{ x: 5, scale: 1.01 }}
-            className="glass-card p-8 group hover:border-neon-cyan/30 transition-all relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-neon-cyan to-neon-purple opacity-40" />
-            
-            <div className="flex items-start justify-between gap-8">
-              <div className="flex-1 space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse" />
-                    <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
-                      {format(new Date(entry.timestamp), 'MMM dd, yyyy • HH:mm')}
-                    </span>
-                  </div>
-                  <div className={cn(
-                    "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                    entry.decisionQuality === 'Correct' ? "bg-neon-green/10 border-neon-green/20 text-neon-green" :
-                    entry.decisionQuality === 'Incorrect' ? "bg-red-500/10 border-red-500/20 text-red-400" :
-                    "bg-gray-500/10 border-white/10 text-gray-400"
-                  )}>
-                    {entry.decisionQuality}
-                  </div>
-                </div>
-                
-                <p className="text-xl text-gray-200 leading-relaxed italic font-medium">"{entry.input}"</p>
-                
-                <div className="flex gap-10">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Confidence Vector</span>
-                    <span className="text-2xl font-black text-neon-cyan tracking-tighter">{entry.confidence}%</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Tone Matrix</span>
-                    <span className="text-2xl font-black text-neon-purple tracking-tighter">{entry.tone}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <button 
-                onClick={() => onDelete(entry.id)}
-                className="p-3 bg-red-500/5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-all opacity-0 group-hover:opacity-100 border border-transparent hover:border-red-500/20"
-              >
-                <Trash2 size={20} />
-              </button>
-            </div>
-          </motion.div>
-        ))}
+      <div className="space-y-4">
+        {entries.length > 0 ? (
+          entries.slice().reverse().map((entry) => (
+            <HistoryItem key={entry.id} entry={entry} onDelete={onDelete} />
+          ))
+        ) : (
+          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+            <p className="text-gray-600 font-mono text-xs uppercase tracking-widest">Vault is empty. Awaiting first scan.</p>
+          </div>
+        )}
       </div>
     </div>
   );
