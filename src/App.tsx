@@ -192,13 +192,20 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
 const AuthScreen = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setLoading(true);
+    setError(null);
     try {
       await signInWithGoogle();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
+      if (error?.code === 'auth/unauthorized-domain') {
+        setError('Domain not authorized. Please add localhost to Firebase Console → Authentication → Settings → Authorized domains.');
+      } else {
+        setError(error?.message || 'Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -247,6 +254,11 @@ const AuthScreen = () => {
             {loading ? <Loader2 className="animate-spin" /> : <LogIn size={20} className="group-hover:translate-x-1 transition-transform" />}
             {loading ? 'INITIALIZING LINK...' : 'SYNC NEURAL PROFILE'}
           </button>
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-300 text-left">
+              <span className="font-bold">⚠ Login Error: </span>{error}
+            </div>
+          )}
         </div>
 
         <div className="pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
