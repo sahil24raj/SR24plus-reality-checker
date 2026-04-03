@@ -23,6 +23,16 @@ export interface AnalysisResult {
   decisionDetails?: string;
   stepByStepGuide?: string[];
   suggestions: string[];
+  // New AI WOW Fields
+  aiCoachMessage?: string;
+  emotionalFeedback?: string;
+  disciplineScore?: number;
+  focusScore?: number;
+  mentalClarityScore?: number;
+  realityScore?: number;
+  patternDetected?: string;
+  futurePrediction?: string;
+  aiCoachPlan?: string[];
 }
 
 export interface DailyReport {

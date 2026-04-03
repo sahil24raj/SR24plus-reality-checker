@@ -232,6 +232,9 @@ const AuthScreen = () => {
         </div>
 
         <div className="space-y-6">
+          <p className="text-neon-cyan font-bold leading-relaxed text-lg italic tracking-wide">
+            AI that analyzes your daily decisions, emotions & patterns to improve your life.
+          </p>
           <p className="text-gray-400 leading-relaxed text-sm">
             Establish a neural link to begin tracking your reality, decisions, and behavioral evolution across the digital timeline.
           </p>
@@ -522,6 +525,25 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
   const last7Days = entries.filter(e => new Date(e.timestamp) > subDays(new Date(), 7));
   const last30Days = entries.filter(e => new Date(e.timestamp) > subDays(new Date(), 30));
 
+  // Streak calculation
+  let currentStreak = 0;
+  const today = startOfDay(new Date());
+  for (let i = 0; i < 30; i++) {
+    const d = subDays(today, i);
+    const hasEntry = entries.some(e => isSameDay(new Date(e.timestamp), d));
+    
+    // If checking today and no entry yet, don't break streak if yesterday had one
+    if (i === 0 && !hasEntry && entries.some(e => isSameDay(new Date(e.timestamp), subDays(today, 1)))) {
+      continue;
+    }
+    
+    if (hasEntry) currentStreak++;
+    else if (i > 0) break; // Break if missed a past day
+  }
+
+  const latestEntry = entries[entries.length - 1] || null;
+  const currentRealityScore = latestEntry?.realityScore || avgConfidence;
+
   const rightDecisions = entries.filter(e => e.decisionQuality === 'Correct').reverse();
   const wrongDecisions = entries.filter(e => e.decisionQuality === 'Incorrect').reverse();
   
@@ -535,12 +557,15 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
   return (
     <div className="space-y-8 pt-8 pb-24">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <h1 className="text-5xl font-black tracking-tighter uppercase italic neon-text-cyan">
             SR24+ <span className="text-white">Reality Checker</span>
           </h1>
+          <p className="text-neon-cyan font-bold italic text-sm tracking-wide">
+            AI that analyzes your daily decisions, emotions & patterns to improve your life.
+          </p>
           <div className="flex items-center gap-3">
-            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em]">Neural Analytics Dashboard v2.1.0</p>
+            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em]">Neural Analytics Dashboard v3.0.0</p>
             <div className="h-px flex-1 bg-gradient-to-r from-neon-cyan/50 to-transparent" />
           </div>
         </div>
@@ -596,15 +621,35 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <motion.div 
+          whileHover={{ scale: 1.02, rotateY: 5 }}
+          className="glass-card p-6 border-neon-cyan/20 overflow-hidden relative group"
+        >
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-cyan/10 blur-3xl rounded-full group-hover:bg-neon-cyan/20 transition-all" />
+          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">Reality Score</div>
+          <div className="text-4xl font-black text-neon-cyan tracking-tighter">{currentRealityScore || 0}</div>
+          <div className="mt-4 text-[10px] font-mono text-gray-500">OVERALL METRIC</div>
+        </motion.div>
+
+        <motion.div 
+          whileHover={{ scale: 1.02, rotateY: -5 }}
+          className="glass-card p-6 border-neon-purple/20 overflow-hidden relative group"
+        >
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-purple/10 blur-3xl rounded-full group-hover:bg-neon-purple/20 transition-all" />
+          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">Day Streak</div>
+          <div className="text-4xl font-black text-neon-purple tracking-tighter">{currentStreak} 🔥</div>
+          <div className="mt-4 text-[10px] font-mono text-gray-500">PUMPING CONSISTENCY</div>
+        </motion.div>
+
         <motion.div 
           whileHover={{ scale: 1.02, rotateY: 5 }}
           className="glass-card p-6 border-neon-cyan/20 overflow-hidden relative group"
         >
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-cyan/10 blur-3xl rounded-full group-hover:bg-neon-cyan/20 transition-all" />
           <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">Confidence Flux</div>
-          <div className="text-5xl font-black text-neon-cyan tracking-tighter">{avgConfidence}%</div>
-          <div className="mt-6 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="text-4xl font-black text-neon-cyan tracking-tighter">{avgConfidence}%</div>
+          <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${avgConfidence}%` }}
@@ -619,8 +664,8 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
         >
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-purple/10 blur-3xl rounded-full group-hover:bg-neon-purple/20 transition-all" />
           <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">Decision Accuracy</div>
-          <div className="text-5xl font-black text-neon-purple tracking-tighter">{decisionRate}%</div>
-          <div className="mt-6 flex gap-1">
+          <div className="text-4xl font-black text-neon-purple tracking-tighter">{decisionRate}%</div>
+          <div className="mt-4 flex gap-1">
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className={cn(
                 "h-2.5 flex-1 rounded-sm transition-all duration-500",
@@ -636,8 +681,8 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
         >
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-green/10 blur-3xl rounded-full group-hover:bg-neon-green/20 transition-all" />
           <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">Right Decisions</div>
-          <div className="text-5xl font-black text-neon-green tracking-tighter">{rightPercent}%</div>
-          <div className="mt-6 text-[10px] font-mono text-gray-500">
+          <div className="text-4xl font-black text-neon-green tracking-tighter">{rightPercent}%</div>
+          <div className="mt-4 text-[10px] font-mono text-gray-500">
             {rightDecisions.length} SUCCESS VECTORS
           </div>
         </motion.div>
@@ -648,8 +693,8 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
         >
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-yellow/10 blur-3xl rounded-full group-hover:bg-neon-yellow/20 transition-all" />
           <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">Wrong Decisions</div>
-          <div className="text-5xl font-black text-neon-yellow tracking-tighter">{wrongPercent}%</div>
-          <div className="mt-6 text-[10px] font-mono text-gray-500">
+          <div className="text-4xl font-black text-neon-yellow tracking-tighter">{wrongPercent}%</div>
+          <div className="mt-4 text-[10px] font-mono text-gray-500">
             {wrongDecisions.length} FAILURE VECTORS
           </div>
         </motion.div>
@@ -875,17 +920,59 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Tone Detected</div>
-                  <div className="text-neon-cyan font-bold">{entries[entries.length-1].tone}</div>
+                  <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Reality Score</div>
+                  <div className="text-neon-cyan font-black text-xl">{entries[entries.length-1].realityScore || 0}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Behavior Pattern</div>
-                  <div className="text-neon-purple font-bold">{entries[entries.length-1].behavior}</div>
+                  <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Tone Detected</div>
+                  <div className="text-neon-purple font-bold text-xl">{entries[entries.length-1].tone}</div>
                 </div>
               </div>
+              
+              {entries[entries.length-1].emotionalFeedback && (
+                <div className="p-4 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl space-y-2">
+                  <div className="text-[10px] font-mono text-neon-cyan uppercase tracking-widest flex items-center gap-2">
+                    <Brain size={14} /> AI Coach Observation
+                  </div>
+                  <p className="text-sm text-gray-300 italic">"{(entries[entries.length-1] as any).aiCoachMessage || entries[entries.length-1].emotionalFeedback}"</p>
+                </div>
+              )}
+
+              {entries[entries.length-1].patternDetected && (
+                <div className="p-4 bg-neon-purple/5 border border-neon-purple/20 rounded-2xl space-y-2">
+                  <div className="text-[10px] font-mono text-neon-purple uppercase tracking-widest flex items-center gap-2">
+                    <Zap size={14} /> Pattern Detected
+                  </div>
+                  <p className="text-sm text-gray-300 font-medium">{entries[entries.length-1].patternDetected}</p>
+                </div>
+              )}
+              
+              {entries[entries.length-1].futurePrediction && (
+                <div className="p-4 bg-neon-yellow/5 border border-neon-yellow/20 rounded-2xl space-y-2">
+                  <div className="text-[10px] font-mono text-neon-yellow uppercase tracking-widest flex items-center gap-2">
+                    <TrendingUp size={14} /> Future Prediction
+                  </div>
+                  <p className="text-sm text-gray-300">{entries[entries.length-1].futurePrediction}</p>
+                </div>
+              )}
             </div>
 
-            <div className="w-full md:w-72 space-y-6">
+            <div className="w-full md:w-80 space-y-6">
+              
+              {/* AI Recommendations */}
+              <div className="space-y-3">
+                <div className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 mb-2 p-3 bg-neon-cyan/20 rounded-xl">
+                   🔥 AI Recommendations
+                </div>
+                <div className="space-y-2">
+                  {(entries[entries.length-1].aiCoachPlan || entries[entries.length-1].suggestions)?.map((rec, i) => (
+                    <div key={i} className="flex gap-3 text-sm text-gray-300 p-3 bg-white/5 rounded-xl border border-white/5">
+                      <span className="text-neon-cyan font-black mt-0.5">•</span>
+                      {rec}
+                    </div>
+                  )) || <div className="text-xs text-gray-500 italic">No recommendations available.</div>}
+                </div>
+              </div>
               <div className="space-y-3">
                 <div className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em]">Thinking Pattern</div>
                 <div className="text-sm text-gray-300 bg-white/5 p-3 rounded-lg border border-white/5">
