@@ -492,6 +492,16 @@ const RealityInput = ({ onAnalyze, user, entries, userGoal }: { onAnalyze: (res:
         </div>
       </motion.div>
 
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start gap-3">
+          <AlertCircle size={18} className="text-red-400 mt-0.5 shrink-0" />
+          <div>
+            <div className="text-xs font-mono text-red-400 uppercase tracking-widest mb-1">Scan Failed</div>
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-4 backdrop-blur-sm">
           <div className="flex items-center gap-3 text-neon-cyan">
