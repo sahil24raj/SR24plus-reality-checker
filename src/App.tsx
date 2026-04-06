@@ -951,9 +951,6 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
         </div>
       </header>
 
-      {/* Reality Mirror Engine */}
-      {latestEntry && <RealityMirrorResults entry={latestEntry} />}
-
       {/* Neural Audit Summary */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -1097,6 +1094,9 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
           </div>
         </div>
       </div>
+ 
+      {/* Reality Mirror Engine */}
+      {latestEntry && <RealityMirrorResults entry={latestEntry} />}
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
