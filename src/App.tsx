@@ -419,6 +419,13 @@ const RealityInput = ({ onAnalyze, user, entries, userGoal }: { onAnalyze: (res:
         aiCoachMessage: result.aiCoachMessage,
         brutalRealityCheck: result.brutalRealityCheck,
         deepScan: result.deepScan,
+
+        // Reality Mirror Engine Fields
+        bestVersionToday: result.bestVersionToday,
+        realityGapScore: result.realityGapScore,
+        brutalTruth: result.brutalTruth,
+        futureIfContinued: result.futureIfContinued,
+        tomorrowFixPlan: result.tomorrowFixPlan,
       };
 
       try {
