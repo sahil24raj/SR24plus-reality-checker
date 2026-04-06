@@ -215,7 +215,7 @@ const AuthScreen = () => {
     } catch (error: any) {
       console.error('Login failed:', error);
       if (error?.code === 'auth/unauthorized-domain') {
-        setError('Domain not authorized. Please add localhost to Firebase Console → Authentication → Settings → Authorized domains.');
+        setError(`Domain "${window.location.hostname}" is not authorized. Please add it to Firebase Console → Authentication → Settings → Authorized domains.`);
       } else {
         setError(error?.message || 'Login failed. Please try again.');
       }
