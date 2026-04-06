@@ -732,6 +732,129 @@ const DeepScanResults = ({ data }: { data: AnalysisResult['deepScan'] }) => {
   );
 };
 
+const RealityMirrorResults = ({ entry }: { entry: AnalysisResult }) => {
+  if (!entry.bestVersionToday && !entry.brutalTruth) return null;
+
+  return (
+    <div className="space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="flex items-center gap-4 mb-2">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-neon-cyan/20" />
+        <h3 className="text-[10px] font-mono text-neon-cyan uppercase tracking-[0.4em] font-black underline underline-offset-8 decoration-neon-cyan/30">Reality Mirror Interface</h3>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-neon-cyan/20" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 1. BEST VERSION TODAY */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="glass-card p-8 border-neon-cyan/20 relative group overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Zap size={60} className="text-neon-cyan" />
+          </div>
+          <div className="space-y-4 relative z-10">
+            <div className="flex items-center gap-3 text-neon-cyan text-xs font-black uppercase tracking-widest">
+              <Target size={18} />
+              Best Version Today
+            </div>
+            <p className="text-gray-300 leading-relaxed italic text-sm border-l-2 border-neon-cyan/30 pl-4 py-1">
+              {entry.bestVersionToday}
+            </p>
+          </div>
+        </motion.div>
+
+        {/* 2. REALITY GAP SCORE */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="glass-card p-8 border-red-500/20 flex flex-col justify-center items-center text-center space-y-4"
+        >
+          <div className="relative w-32 h-32">
+            <svg className="w-full h-full" viewBox="0 0 100 100">
+              <circle 
+                cx="50" cy="50" r="45" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                className="text-white/5"
+              />
+              <motion.circle 
+                cx="50" cy="50" r="45" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="4" 
+                strokeDasharray="283"
+                initial={{ strokeDashoffset: 283 }}
+                animate={{ strokeDashoffset: 283 - (283 * (entry.realityGapScore || 0)) / 100 }}
+                className={cn(
+                  "transition-all duration-1000",
+                  (entry.realityGapScore || 0) < 40 ? "text-red-500" : (entry.realityGapScore || 0) < 70 ? "text-neon-yellow" : "text-neon-green"
+                )}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-black text-white">{(entry.realityGapScore || 0)}%</span>
+              <span className="text-[8px] font-mono text-gray-500 uppercase tracking-tighter">Alignment</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-xs font-black uppercase tracking-widest text-white">Reality Gap Detected</h4>
+            <p className="text-[10px] text-gray-500 font-mono italic">Potential vs. Current Execution</p>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 3. BRUTAL TRUTH */}
+        <div className="md:col-span-2 p-8 bg-red-500/5 border border-red-500/20 rounded-3xl space-y-4 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500/50 via-transparent to-red-500/50 opacity-30" />
+          <div className="flex items-center gap-3 text-red-500 text-xs font-black uppercase tracking-widest">
+            <ShieldAlert size={18} />
+            Brutal Truth
+          </div>
+          <p className="text-red-200/80 font-bold leading-relaxed text-sm italic">
+            "{entry.brutalTruth}"
+          </p>
+        </div>
+
+        {/* 4. FUTURE IF CONTINUED */}
+        <div className="p-8 bg-orange-500/5 border border-orange-500/20 rounded-3xl space-y-4">
+          <div className="flex items-center gap-3 text-orange-400 text-xs font-black uppercase tracking-widest">
+            <TrendingUp size={18} />
+            30-Day Drift
+          </div>
+          <p className="text-orange-200/70 text-[10px] leading-relaxed italic">
+            {entry.futureIfContinued}
+          </p>
+        </div>
+      </div>
+
+      {/* 5. TOMORROW FIX PLAN */}
+      {entry.tomorrowFixPlan && entry.tomorrowFixPlan.length > 0 && (
+        <div className="p-8 bg-neon-green/5 border border-neon-green/20 rounded-3xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-neon-green text-xs font-black uppercase tracking-widest">
+              <Plus size={18} />
+              Tomorrow Fix Plan [LOCKED]
+            </div>
+            <div className="text-[8px] font-mono text-neon-green/40 uppercase tracking-widest animate-pulse">Neural Path Verified</div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {entry.tomorrowFixPlan.map((step, idx) => (
+              <div key={idx} className="flex gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-neon-green/30 transition-all group">
+                <span className="text-xl font-black text-neon-green/20 group-hover:text-neon-green/50 transition-colors">0{idx + 1}</span>
+                <p className="text-[10px] text-gray-300 font-bold leading-tight uppercase tracking-tighter">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
   if (entries.length === 0) {
     return (
@@ -820,6 +943,9 @@ const Dashboard = ({ entries }: { entries: AnalysisResult[] }) => {
           </div>
         </div>
       </header>
+
+      {/* Reality Mirror Engine */}
+      {latestEntry && <RealityMirrorResults entry={latestEntry} />}
 
       {/* Neural Audit Summary */}
       <motion.div 

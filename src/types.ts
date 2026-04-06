@@ -135,6 +135,13 @@ export interface AnalysisResult {
     };
     microTask?: string;
   };
+
+  // 18. REALITY MIRROR ENGINE (NEW)
+  bestVersionToday?: string;
+  realityGapScore?: number;
+  brutalTruth?: string;
+  futureIfContinued?: string;
+  tomorrowFixPlan?: string[];
 }
 
 export interface UserProfile {

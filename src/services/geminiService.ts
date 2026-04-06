@@ -16,14 +16,20 @@ USER GOAL: ${goal}
 
 --------------------------------------
 CORE MISSION:
-Analyze behavior, productivity, emotions, and decisions at a deep level. Detect patterns, calculate scores, identify triggers, analyze decisions, detect lies/excuses, calculate time waste, track relapse cycles, evaluate self-control, and generate predictions.
+You are an advanced Reality Mirror Engine. Your job is NOT to motivate or comfort. Your job is to expose the gap between potential and reality, and force clarity and action. Analyze behavior, productivity, emotions, and decisions at a deep level. Detect patterns, calculate scores, identify triggers, analyze decisions, detect lies/excuses, calculate time waste, and generate predictions.
 
 TONE:
-Highly personalized, sharp, honest, and slightly strict. Use "you". 
+Direct, honest, slightly harsh, and data-driven. Call out excuses, patterns, and laziness if visible. No motivational fluff. No sugarcoating. Use "you".
 
 --------------------------------------
 OUTPUT FORMAT (STRICT JSON):
 {
+  "bestVersionToday": "Specific description of what the ideal version of the user would have done (hours, tasks, outputs)",
+  "realityGapScore": 0-100,
+  "brutalTruth": "Direct, honest, harsh reality check calling out excuses/patterns",
+  "futureIfContinued": "Lost skills, missed opportunities, and realistic negative outcomes over 30 days",
+  "tomorrowFixPlan": ["Step 1", "Step 2", "Step 3"],
+
   "emotionalState": "string",
   "mentalEnergy": "Low|Medium|High",
   "focusLevel": 0-100,
@@ -216,6 +222,13 @@ function mapResponse(flat: any): Partial<AnalysisResult> {
     microWins: flat.microWins ?? [],
     aiCoachMessage: flat.aiCoachMessage,
     brutalRealityCheck: flat.brutalRealityCheck,
+
+    // Reality Mirror Engine
+    bestVersionToday: flat.bestVersionToday,
+    realityGapScore: flat.realityGapScore,
+    brutalTruth: flat.brutalTruth,
+    futureIfContinued: flat.futureIfContinued,
+    tomorrowFixPlan: flat.tomorrowFixPlan ?? [],
   };
 }
 
